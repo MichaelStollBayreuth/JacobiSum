@@ -5,6 +5,8 @@ Results on Jacobi Sums
 This repository contains formalizations in Lean+Mathlib of some results on Jacobi Sums.
 We mostly follow the book of Ireland and Rosen.
 
+The code is based on work done by Alexander Spahl for his BSc thesis in Bayreuth.
+
 Files:
 * [__JacobiSum/Auxiliary.lean__](JacobiSum/Auxiliary.lean):
   auxiliary lemmas

@@ -378,7 +378,7 @@ end GaussSum
 has absolute value the square root of `#F`. -/
 lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ.IsNontrivial) {φ : AddChar F ℂ}
     (hφ : φ.IsPrimitive) :
-  Complex.abs (gaussSum χ φ) = Real.sqrt (Fintype.card F) := by
+    Complex.abs (gaussSum χ φ) = Real.sqrt (Fintype.card F) := by
   have hF : 0 < ringChar F := Nat.pos_of_ne_zero <| CharP.ringChar_ne_zero_of_finite F
   have gauss_inv : gaussSum χ⁻¹ φ⁻¹ = star (gaussSum χ φ) := by
     rw [← χ.starComp_eq_inv, gaussSum, gaussSum]

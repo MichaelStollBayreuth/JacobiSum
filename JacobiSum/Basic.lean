@@ -374,8 +374,6 @@ end GaussSum
 ### Gauss and Jacobi sums of characters with values in ℂ
 -/
 
-/- Proposition 8.2.2: χ ≠ ε => |g(χ)| = √p -/
-
 /--  The Gauss sum of a multiplicative character on a finite field `F` with values in `ℂ`
 has absolute value the square root of `#F`. -/
 lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ.IsNontrivial) {φ : AddChar F ℂ}

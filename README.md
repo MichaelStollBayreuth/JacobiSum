@@ -6,7 +6,7 @@ This repository contains formalizations in Lean+Mathlib of some results on Jacob
 We mostly follow the book of Ireland and Rosen.
 
 Files:
-* [__JacobiSum/Auxiliary.lean__](blob/main/JacobiSum/Auxiliary.lean):
+* [__JacobiSum/Auxiliary.lean__](JacobiSum/Auxiliary.lean):
   auxiliary lemmas
 * [__JacobiSum/AddChar.lean__](blob/main/JacobiSum/AddChar.lean):
   additional API for additive characters

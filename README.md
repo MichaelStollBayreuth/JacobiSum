@@ -6,15 +6,15 @@ This repository contains formalizations in Lean+Mathlib of some results on Jacob
 We mostly follow the book of Ireland and Rosen.
 
 Files:
-* [__JacobiSum/Auxiliary.lean__](JacobiSum/blob/main/JacobiSum/Auxiliary.lean):
+* [__JacobiSum/Auxiliary.lean__](blob/main/JacobiSum/Auxiliary.lean):
   auxiliary lemmas
-* [__JacobiSum/AddChar.lean__](JacobiSum/blob/main/JacobiSum/AddChar.lean):
+* [__JacobiSum/AddChar.lean__](blob/main/JacobiSum/AddChar.lean):
   additional API for additive characters
-* [__JacobiSum/MulChar.lean__](JacobiSum/blob/main/JacobiSum/MulChar.lean):
+* [__JacobiSum/MulChar.lean__](blob/main/JacobiSum/MulChar.lean):
   additional API for multiplicative characters
-* [__JacobiSum/Basic.lean__](JacobiSum/blob/main/JacobiSum/Basic.lean):
+* [__JacobiSum/Basic.lean__](blob/main/JacobiSum/Basic.lean):
   definition of the Jacobi sum and general properties
-* [__JacobiSum/Cubic.lean__](JacobiSum/blob/main/JacobiSum/Cubic.lean):
+* [__JacobiSum/Cubic.lean__](blob/main/JacobiSum/Cubic.lean):
   results specific for Jacobi sums `J(χ,χ)`, where `χ` is a cubic character on a finite field
 
 

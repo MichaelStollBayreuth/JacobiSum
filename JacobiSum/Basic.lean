@@ -59,13 +59,11 @@ lemma jacobiSum_eq_aux (χ ψ : MulChar F R) :
   conv =>
     enter [1, 2, x]
     rw [show ∀ x y : R, x * y = x + y - 1 + (x - 1) * (y - 1) by intros; ring]
-  rw [sum_add_distrib, sum_sub_distrib, sum_add_distrib,
-    ← sum_eq_sum_one_sub, Fintype.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one,
-    sum_sdiff_eq_sub (subset_univ _)]
-  simp only [sum_const, card_univ, nsmul_eq_mul, mul_one, mem_singleton, zero_ne_one,
-    not_false_eq_true, sum_insert, isUnit_iff_ne_zero, ne_eq, not_true_eq_false,
-    MulCharClass.map_nonunit, zero_sub, sub_zero, map_one, sub_self, mul_zero, sum_singleton,
-    mul_neg, neg_zero, add_zero]
+  rw [sum_add_distrib, sum_sub_distrib, sum_add_distrib, ← sum_eq_sum_one_sub,
+    Fintype.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, sum_sdiff_eq_sub (subset_univ _),
+    ← sub_zero (_ - _ + _), add_sub_assoc]
+  congr
+  rw [sum_pair zero_ne_one, sub_zero, ψ.map_one, χ.map_one, sub_self, mul_zero, zero_mul, add_zero]
 
 private
 lemma MulChar.val_sub_one [IsDomain R] {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R}
@@ -80,13 +78,9 @@ lemma MulChar.val_sub_one_mul_val_sub_one [IsDomain R] {n : ℕ} (hn : n ≠ 0) 
     {μ : R} (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hμ : IsPrimitiveRoot μ n) (x : F) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, (χ x - 1) * (ψ (1 - x) - 1) = z * (μ - 1) ^ 2 := by
   rcases eq_or_ne x 0 with rfl | hx₀
-  · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
-    simp only [isUnit_iff_ne_zero, ne_eq, not_true_eq_false, not_false_eq_true,
-      MulCharClass.map_nonunit, zero_sub, sub_zero, map_one, sub_self, mul_zero, zero_mul]
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, map_one, sub_self, mul_zero, zero_mul]⟩
   rcases eq_or_ne x 1 with rfl | hx₁
-  · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
-    simp only [map_one, sub_self, isUnit_iff_ne_zero, ne_eq, not_true_eq_false, not_false_eq_true,
-      MulCharClass.map_nonunit, zero_sub, mul_neg, mul_one, neg_zero, zero_mul]
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
   rw [ne_comm, ← sub_ne_zero] at hx₁
   obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.val_sub_one hn hχ hμ hx₀
   obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.val_sub_one hn hψ hμ hx₁

@@ -42,13 +42,13 @@ theorem gaussSum_pow_three {χ : MulChar F R} (hχ : orderOf χ = 3) {ψ : AddCh
     Nat.succ_sub_succ_eq_sub, tsub_zero, Icc_self, prod_singleton, pow_one]
     using gaussSum_pow_eq_prod_jacobiSum (by omega : 2 ≤ orderOf χ) hψ
 
-variable {K : Type*} [Field K]
+variable {R : Type*} [CommRing R] [IsDomain R]
 
-/-- If `χ` is a cubic multiplicative character on a finite field `F` with values in a field `K`
-and `ω` is a primitive cube root of unity in `K`, then `J(χ,χ)= -1 + 3*z` with `z ∈ ℤ[ω] ⊆ K`. -/
--- an integral domain should be enough for the target
-lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F K} (hχ : orderOf χ = 3)
-    {ω : K} (hω : IsPrimitiveRoot ω 3) :
+/-- If `χ` is a cubic multiplicative character on a finite field `F` with values in an
+intgral domain `R` and `ω` is a primitive cube root of unity in `R`,
+then `J(χ,χ)= -1 + 3*z` with `z ∈ ℤ[ω] ⊆ R`. -/
+lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F R} (hχ : orderOf χ = 3)
+    {ω : R} (hω : IsPrimitiveRoot ω 3) :
     ∃ z ∈ Algebra.adjoin ℤ {ω}, jacobiSum χ χ = -1 + 3 * z := by
   have hχ' : χ ^ 3 = 1 := hχ ▸ pow_orderOf_eq_one χ
   obtain ⟨z, hz, Hz⟩ := jacobiSum_eq_neg_one_add (by omega) hχ' hχ' hχ hω
@@ -58,12 +58,11 @@ lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F K} 
   refine ⟨-ω * z, ?_, Hz⟩
   exact Subalgebra.mul_mem _ (Subalgebra.neg_mem _ <| Algebra.self_mem_adjoin_singleton ℤ ω) hz
 
-/-- If `χ` is a cubic multiplicative character on a finite field `F` with values in a field `K`
-and `ω` is a primitive cube root of unity in `K`, then `J(χ,χ)= (-1 + 3*a) + 3*b*ω`
-with integers `a` and `b`. -/
--- an integral domain should be enough for the target
-lemma jacobiSum_eq_neg_one_add_three_mul_add_of_orderOf_eq_three {χ : MulChar F K}
-    (hχ : orderOf χ = 3) {ω : K} (hω : IsPrimitiveRoot ω 3) :
+/-- If `χ` is a cubic multiplicative character on a finite field `F` with values
+in an integral domain `R` and `ω` is a primitive cube root of unity in `R`,
+then `J(χ,χ)= (-1 + 3*a) + 3*b*ω` with integers `a` and `b`. -/
+lemma jacobiSum_eq_neg_one_add_three_mul_add_of_orderOf_eq_three {χ : MulChar F R}
+    (hχ : orderOf χ = 3) {ω : R} (hω : IsPrimitiveRoot ω 3) :
     ∃ a b : ℤ, jacobiSum χ χ = -1 + 3 * a + 3 * b * ω := by
   obtain ⟨z, hz, Hz⟩ := jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three hχ hω
   obtain ⟨a, b, hab⟩ := JacobiSumCubic.integral_repr hω hz

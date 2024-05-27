@@ -167,7 +167,7 @@ lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hρ : orderOf ρ = n) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by
   obtain ⟨q, hq⟩ := hρ ▸ ρ.dvd_card_sub_one
-  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.order_eq_mul hn
+  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.order_eq_mul_self_sub_one_pow hn
   rw [Nat.sub_eq_iff_eq_add NeZero.one_le] at hq
   by_cases hχ₀ : χ = 1 <;> by_cases hψ₀ : ψ = 1
   · rw [hχ₀, hψ₀, jacobiSum_triv_triv]

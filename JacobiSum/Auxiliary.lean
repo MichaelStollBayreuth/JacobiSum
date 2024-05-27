@@ -55,12 +55,23 @@ lemma Algebra.adjoin.sub_one_dvd_pow_sub_one (R : Type*) {A : Type*} [CommRing R
   refine ⟨(Finset.range k).sum (μ ^ ·), ?_, (geom_sum_mul μ k).symm⟩
   exact Subalgebra.sum_mem _ fun m _ ↦ Subalgebra.pow_mem _ (self_mem_adjoin_singleton _ μ) _
 
--- need `Field R` (instead of `CommRing` and `IsDomain`) because `X_pow_sub_C_eq_prod`
--- (unnecessarily) requires it
+variable {R : Type*} [CommRing R] [IsDomain R]
+
+open BigOperators Polynomial in
+/-- A version of `X_pow_sub_C_eq_prod` for integral domains instead of fields. -/
+lemma X_pow_sub_C_eq_prod'
+    {n : ℕ} {ζ : R} (hζ : IsPrimitiveRoot ζ n) {α a : R} (hn : 0 < n) (e : α ^ n = a) :
+    (X ^ n - C a) = ∏ i ∈ Finset.range n, (X - C (ζ ^ i * α)) := by
+  let K := FractionRing R
+  have := X_pow_sub_C_eq_prod (hζ.map_of_injective <| NoZeroSMulDivisors.algebraMap_injective R K)
+    hn <| map_pow (algebraMap R K) α n ▸ congrArg (algebraMap R K) e
+  apply_fun Polynomial.map <| algebraMap R K using
+    map_injective (algebraMap R K) <| NoZeroSMulDivisors.algebraMap_injective R K
+  simpa only [Polynomial.map_sub, Polynomial.map_pow, map_X, map_C, map_mul, map_pow,
+    Polynomial.map_prod, Polynomial.map_mul] using this
+
 open Finset Polynomial in
-lemma IsPrimitiveRoot.prod_eq_order {R : Type*} [Field R] --[CommRing R] [IsDomain R]
-    {n : ℕ} (hn : n ≠ 0)
-    {μ : R} (hμ : IsPrimitiveRoot μ n) :
+lemma IsPrimitiveRoot.prod_eq_order {n : ℕ} (hn : n ≠ 0) {μ : R} (hμ : IsPrimitiveRoot μ n) :
     (-1) ^ (n - 1) * (range (n - 1)).prod (fun k ↦ μ ^ (k + 1) - 1) = n := by
   suffices H : (range (n - 1)).prod (fun k ↦ 1 - μ ^ (k + 1)) = n by
     rw [← H]
@@ -68,7 +79,7 @@ lemma IsPrimitiveRoot.prod_eq_order {R : Type*} [Field R] --[CommRing R] [IsDoma
       rw [prod_const, card_range]
     rw [this, ← prod_mul_distrib]
     simp only [neg_one_mul, neg_sub]
-  have := X_pow_sub_C_eq_prod hμ (Nat.pos_of_ne_zero hn) (one_pow n)
+  have := X_pow_sub_C_eq_prod' hμ (Nat.pos_of_ne_zero hn) (one_pow n)
   have HH : (X ^ n - C 1 : R[X]) = (X - C 1) * (range n).sum (fun k ↦ X ^ k) :=
     (mul_geom_sum X n).symm
   rw [HH] at this; clear HH
@@ -79,10 +90,7 @@ lemma IsPrimitiveRoot.prod_eq_order {R : Type*} [Field R] --[CommRing R] [IsDoma
   simpa only [Nat.cast_add, Nat.cast_one, mul_one, map_pow, eval_prod, eval_sub, eval_X, eval_pow,
     eval_C, eval_geom_sum, one_pow, sum_const, card_range, nsmul_eq_mul] using this
 
--- need `Field R` (instead of `CommRing` and `IsDomain`) because `X_pow_sub_C_eq_prod`
--- (unnecessarily) requires it
-lemma IsPrimitiveRoot.order_eq_mul {R : Type*} [Field R] {n : ℕ} (hn : 2 < n) {μ : R}
-    (hμ : IsPrimitiveRoot μ n) :
+lemma IsPrimitiveRoot.order_eq_mul {n : ℕ} (hn : 2 < n) {μ : R} (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, n = z * (μ - 1) ^ 2 := by
   have := hμ.prod_eq_order (by omega : n ≠ 0)
   let m + 3 := n

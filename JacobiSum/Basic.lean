@@ -65,49 +65,6 @@ lemma jacobiSum_eq_aux (χ ψ : MulChar F R) :
   congr
   rw [sum_pair zero_ne_one, sub_zero, ψ.map_one, χ.map_one, sub_self, mul_zero, zero_mul, add_zero]
 
-private
-lemma MulChar.val_sub_one [IsDomain R] {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R}
-     (hχ : χ ^ n = 1) (hμ : IsPrimitiveRoot μ n) {x : F} (hx : x ≠ 0) :
-    ∃ z ∈ Algebra.adjoin ℤ {μ}, χ x - 1 = z * (μ - 1) := by
-  obtain ⟨k, _, hk⟩ := exists_val_eq_pow hn hχ hμ hx
-  obtain ⟨z, hz₁, hz₂⟩ := Algebra.adjoin.sub_one_dvd_pow_sub_one ℤ μ k
-  exact ⟨z, hz₁, hk.symm ▸ hz₂⟩
-
-private
-lemma MulChar.val_sub_one_mul_val_sub_one [IsDomain R] {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R}
-    {μ : R} (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hμ : IsPrimitiveRoot μ n) (x : F) :
-    ∃ z ∈ Algebra.adjoin ℤ {μ}, (χ x - 1) * (ψ (1 - x) - 1) = z * (μ - 1) ^ 2 := by
-  rcases eq_or_ne x 0 with rfl | hx₀
-  · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, map_one, sub_self, mul_zero, zero_mul]⟩
-  rcases eq_or_ne x 1 with rfl | hx₁
-  · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
-  rw [ne_comm, ← sub_ne_zero] at hx₁
-  obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.val_sub_one hn hχ hμ hx₀
-  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.val_sub_one hn hψ hμ hx₁
-  refine ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, ?_⟩
-  rw [Hz₁, Hz₂]
-  ring
-
-/-- If `χ` is a multiplicative character of order `n` on a finite field `F` with values in
-a field `K` of characteristic zero, and `μ` is a primitive `n`th root of unity in `K`,
-then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ K`. -/
-lemma jacobiSum_mem_algebraAdjoin {K} [Field K] [CharZero K] {χ : MulChar F K} {μ : K}
-    (hμ : IsPrimitiveRoot μ (orderOf χ)) :
-    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
-  simp_rw [jacobiSum, ← map_mul χ]
-  apply Subalgebra.sum_mem
-  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin hμ _
-
-/-- If `χ` is a multiplicative character satisfying `χ^n = 1` on a finite field `F` with values in
-a field `K` of characteristic zero, and `μ` is a primitive `n`th root of unity in `K`,
-then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ K`. -/
-lemma jacobiSum_mem_algebraAdjoin_of_pow_eq {K} [Field K] [CharZero K] {n : ℕ} (hn : n ≠ 0)
-    {χ : MulChar F K} (hχ : χ ^ n = 1) {μ : K} (hμ : IsPrimitiveRoot μ n) :
-    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
-  simp_rw [jacobiSum, ← map_mul χ]
-  apply Subalgebra.sum_mem
-  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
-
 /-- If `1` is the trivial multiplicative character on a finite field `F`, then `J(1,1) = #F-2`. -/
 theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 2 := by
   rw [show 1 = MulChar.trivial F R from rfl, jacobiSum_eq_sum_sdiff]
@@ -128,8 +85,68 @@ theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 
     rw [show 1 + m + 1 = m + 2 by ring] at hm
     simp only [hm, add_tsub_cancel_right, Nat.cast_add, Nat.cast_ofNat, add_sub_cancel_right]
 
+/-- A formula for the product of two Gauss sums. -/
+lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
+    gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
+  rw [gaussSum, gaussSum, sum_mul_sum]
+  conv => enter [1, 2, x, 2, x_1]; rw [mul_mul_mul_comm]
+  simp only [← ψ.map_add_mul]
+  have sum_eq x : ∑ y : F, χ x * φ y * ψ (x + y) = ∑ y : F, χ x * φ (y - x) * ψ y := by
+    rw [sum_bij (fun a _ ↦ a + x)]
+    · simp only [mem_univ, forall_true_left, forall_const]
+    · simp only [mem_univ, add_left_inj, imp_self, forall_const]
+    · exact fun b _ ↦ ⟨b - x, mem_univ _, by rw [sub_add_cancel]⟩
+    · exact fun a _ ↦ by rw [add_sub_cancel_right, add_comm]
+  rw [sum_congr rfl fun x _ ↦ sum_eq x, sum_comm]
+
+
+-- From here on, we assume that the target `R` is an integral domain.
+variable [IsDomain R]
+
+private
+lemma MulChar.val_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (hχ : χ ^ n = 1)
+    (hμ : IsPrimitiveRoot μ n) {x : F} (hx : x ≠ 0) :
+    ∃ z ∈ Algebra.adjoin ℤ {μ}, χ x - 1 = z * (μ - 1) := by
+  obtain ⟨k, _, hk⟩ := exists_val_eq_pow hn hχ hμ hx
+  obtain ⟨z, hz₁, hz₂⟩ := Algebra.adjoin.sub_one_dvd_pow_sub_one ℤ μ k
+  exact ⟨z, hz₁, hk.symm ▸ hz₂⟩
+
+private
+lemma MulChar.val_sub_one_mul_val_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R} {μ : R}
+    (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hμ : IsPrimitiveRoot μ n) (x : F) :
+    ∃ z ∈ Algebra.adjoin ℤ {μ}, (χ x - 1) * (ψ (1 - x) - 1) = z * (μ - 1) ^ 2 := by
+  rcases eq_or_ne x 0 with rfl | hx₀
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, map_one, sub_self, mul_zero, zero_mul]⟩
+  rcases eq_or_ne x 1 with rfl | hx₁
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
+  rw [ne_comm, ← sub_ne_zero] at hx₁
+  obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.val_sub_one hn hχ hμ hx₀
+  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.val_sub_one hn hψ hμ hx₁
+  refine ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, ?_⟩
+  rw [Hz₁, Hz₂]
+  ring
+
+/-- If `χ` is a multiplicative character of order `n` on a finite field `F` with values in
+an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
+then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ R`. -/
+lemma jacobiSum_mem_algebraAdjoin {χ : MulChar F R} {μ : R} (hμ : IsPrimitiveRoot μ (orderOf χ)) :
+    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
+  simp_rw [jacobiSum, ← map_mul χ]
+  apply Subalgebra.sum_mem
+  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin hμ _
+
+/-- If `χ` is a multiplicative character satisfying `χ^n = 1` on a finite field `F` with values in
+an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
+then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ R`. -/
+lemma jacobiSum_mem_algebraAdjoin_of_pow_eq {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R}
+    (hχ : χ ^ n = 1) {μ : R} (hμ : IsPrimitiveRoot μ n) :
+    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
+  simp_rw [jacobiSum, ← map_mul χ]
+  apply Subalgebra.sum_mem
+  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
+
 /-- If `χ` is a nontrivial multiplicative character on a finite field `F`, then `J(1,χ) = -1`. -/
-theorem jacobiSum_triv_nontriv [IsDomain R] {χ : MulChar F R} (hχ : χ.IsNontrivial) :
+theorem jacobiSum_triv_nontriv {χ : MulChar F R} (hχ : χ.IsNontrivial) :
     jacobiSum 1 χ = -1 := by
   rw [jacobiSum_eq_aux, hχ.sum_eq_zero, MulChar.sum_one_eq_card_units,
     Fintype.card_eq_card_units_add_one (α := F), add_zero, Nat.cast_add, Nat.cast_one,
@@ -146,12 +163,11 @@ theorem jacobiSum_triv_nontriv [IsDomain R] {χ : MulChar F R} (hχ : χ.IsNontr
 with values in an integral domain `R` and `μ` is a primitive `n`th root of unity in `R`,
 then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`.
 (We assume that there exists a multiplicative character of exact order `n` on `F`.) -/
--- need `Field K` because `X_pow_sub_C_eq_prod` (unnecessarily) requires it
-lemma jacobiSum_eq_neg_one_add {K : Type*} [Field K] {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F K}
-    {μ : K} (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hρ : orderOf ρ = n) (hμ : IsPrimitiveRoot μ n) :
+lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {μ : R}
+    (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hρ : orderOf ρ = n) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by
   obtain ⟨q, hq⟩ := hρ ▸ ρ.dvd_card_sub_one
-  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.order_eq_mul hn -- this needs `Field K`
+  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.order_eq_mul hn
   rw [Nat.sub_eq_iff_eq_add NeZero.one_le] at hq
   by_cases hχ₀ : χ = 1 <;> by_cases hψ₀ : ψ = 1
   · rw [hχ₀, hψ₀, jacobiSum_triv_triv]
@@ -181,8 +197,7 @@ lemma jacobiSum_eq_neg_one_add {K : Type*} [Field K] {n : ℕ} (hn : 2 < n) {χ 
 
 /-- If `χ` is a nontrivial multiplicative character on a finite field `F`,
 then the Jacobi sum `J(χ,χ⁻¹) = -χ(-1)`. -/
-theorem jacobiSum_inv [IsDomain R] {χ : MulChar F R} (hχ : χ.IsNontrivial) :
-    jacobiSum χ χ⁻¹ = -(χ (-1)) := by
+theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ.IsNontrivial) : jacobiSum χ χ⁻¹ = -(χ (-1)) := by
   rw [jacobiSum]
   conv => enter [1, 2, x]; rw [MulChar.inv_apply', ← map_mul, ← div_eq_mul_inv]
   -- remove zero summand for `x = 1`
@@ -208,23 +223,9 @@ theorem jacobiSum_inv [IsDomain R] {χ : MulChar F R} (hχ : χ.IsNontrivial) :
   -- sum over values of multiplicative character vanishes
   exact hχ.sum_eq_zero
 
-/-- A formula for the product of two Gauss sums. -/
-lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
-    gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
-  rw [gaussSum, gaussSum, sum_mul_sum]
-  conv => enter [1, 2, x, 2, x_1]; rw [mul_mul_mul_comm]
-  simp only [← ψ.map_add_mul]
-  have sum_eq x : ∑ y : F, χ x * φ y * ψ (x + y) = ∑ y : F, χ x * φ (y - x) * ψ y := by
-    rw [sum_bij (fun a _ ↦ a + x)]
-    · simp only [mem_univ, forall_true_left, forall_const]
-    · simp only [mem_univ, add_left_inj, imp_self, forall_const]
-    · exact fun b _ ↦ ⟨b - x, mem_univ _, by rw [sub_add_cancel]⟩
-    · exact fun a _ ↦ by rw [add_sub_cancel_right, add_comm]
-  rw [sum_congr rfl fun x _ ↦ sum_eq x, sum_comm]
-
 /-- If `χ` and `ψ` are multiplicative characters on a finite field `F` such that
 `χψ` is nontrivial, then `g(χ) * J(χ,ψ) = g(χ) * g(ψ)`. -/
-theorem jacobiSum_nontriv_nontriv [IsDomain R] {χ φ : MulChar F R} (h : (χ * φ).IsNontrivial)
+theorem jacobiSum_nontriv_nontriv {χ φ : MulChar F R} (h : (χ * φ).IsNontrivial)
     (ψ : AddChar F R) :
     gaussSum (χ * φ) ψ * jacobiSum χ φ = gaussSum χ ψ * gaussSum φ ψ := by
   rw [gaussSum_mul _ _ ψ, sum_eq_sum_diff_singleton_add (mem_univ (0 : F))]
@@ -274,8 +275,6 @@ theorem jacobiSum_nontriv_nontriv' {R} [Field R] (h : (Fintype.card F : R) ≠ 0
   exact jacobiSum_nontriv_nontriv hχψ ψ
 
 section GaussSum
-
-variable [IsDomain R]
 
 open MulChar FiniteField
 
@@ -385,8 +384,7 @@ theorem jacobiSum_abs_eq_sqrt {χ ψ : MulChar F ℂ} (hχ : χ.IsNontrivial) (h
 ### A proof of Fermat's two-squares theorem via Jacobi sums
 -/
 
-open FiniteField MulChar
-
+open MulChar in
 /-- An alternative proof of the sum-of-two-squares-theorem using Jacobi sums. -/
 theorem Nat.prime_sq_add_sq' {p : ℕ} [hp : Fact p.Prime] (hp : p % 4 = 1) :
     ∃ a b : ℤ, p = a ^ 2 + b ^ 2 := by

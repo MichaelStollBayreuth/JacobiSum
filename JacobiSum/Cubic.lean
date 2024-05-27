@@ -8,9 +8,9 @@ namespace JacobiSumCubic
 variable {R : Type*} [CommRing R] [IsDomain R] {ω : R} (hω : IsPrimitiveRoot ω 3)
 
 lemma rel_of_IsPrimitiveRoot : ω ^ 2 + ω + 1 = 0 := by
-  apply_fun (· * (ω - 1)) using mul_left_injective₀ <| sub_ne_zero.mpr <| hω.ne_one (by omega)
-  simp only [zero_mul]
-  rw [show (ω ^ 2 + ω + 1) * (ω - 1) = ω ^ 3 - 1 by ring, hω.pow_eq_one, sub_self]
+  rw [← hω.geom_sum_eq_zero (by omega)]
+  simp only [sum_range_succ, range_one, sum_singleton, pow_zero, pow_one]
+  abel
 
 /-- If `ω` is a primitive cube root of unity, then any element of `ℤ[ω] ⊆ R` has the form
 `a + b*ω` with integers `a` and `b`. -/

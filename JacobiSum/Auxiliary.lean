@@ -63,12 +63,12 @@ lemma X_pow_sub_C_eq_prod'
     {n : ℕ} {ζ : R} (hζ : IsPrimitiveRoot ζ n) {α a : R} (hn : 0 < n) (e : α ^ n = a) :
     (X ^ n - C a) = ∏ i ∈ Finset.range n, (X - C (ζ ^ i * α)) := by
   let K := FractionRing R
-  have := X_pow_sub_C_eq_prod (hζ.map_of_injective <| NoZeroSMulDivisors.algebraMap_injective R K)
-    hn <| map_pow (algebraMap R K) α n ▸ congrArg (algebraMap R K) e
-  apply_fun Polynomial.map <| algebraMap R K using
-    map_injective (algebraMap R K) <| NoZeroSMulDivisors.algebraMap_injective R K
+  let i := algebraMap R K
+  have h := NoZeroSMulDivisors.algebraMap_injective R K
+  apply_fun Polynomial.map i using map_injective i h
   simpa only [Polynomial.map_sub, Polynomial.map_pow, map_X, map_C, map_mul, map_pow,
-    Polynomial.map_prod, Polynomial.map_mul] using this
+    Polynomial.map_prod, Polynomial.map_mul]
+    using X_pow_sub_C_eq_prod (hζ.map_of_injective h) hn <| map_pow i α n ▸ congrArg i e
 
 open Finset Polynomial in
 lemma IsPrimitiveRoot.prod_eq_order {n : ℕ} (hn : n ≠ 0) {μ : R} (hμ : IsPrimitiveRoot μ n) :

@@ -103,13 +103,14 @@ lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
 -- From here on, we assume that the target `R` is an integral domain.
 variable [IsDomain R]
 
+open Algebra in
 private
 lemma MulChar.val_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (hχ : χ ^ n = 1)
     (hμ : IsPrimitiveRoot μ n) {x : F} (hx : x ≠ 0) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, χ x - 1 = z * (μ - 1) := by
   obtain ⟨k, _, hk⟩ := exists_val_eq_pow hn hχ hμ hx
-  obtain ⟨z, hz₁, hz₂⟩ := Algebra.adjoin.sub_one_dvd_pow_sub_one ℤ μ k
-  exact ⟨z, hz₁, hk.symm ▸ hz₂⟩
+  refine hk ▸ ⟨(Finset.range k).sum (μ ^ ·), ?_, (geom_sum_mul μ k).symm⟩
+  exact Subalgebra.sum_mem _ fun m _ ↦ Subalgebra.pow_mem _ (self_mem_adjoin_singleton _ μ) _
 
 private
 lemma MulChar.val_sub_one_mul_val_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R} {μ : R}
@@ -167,7 +168,7 @@ lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hρ : orderOf ρ = n) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by
   obtain ⟨q, hq⟩ := hρ ▸ ρ.dvd_card_sub_one
-  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.order_eq_mul_self_sub_one_pow hn
+  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.self_sub_one_pow_dvd_order hn
   rw [Nat.sub_eq_iff_eq_add NeZero.one_le] at hq
   by_cases hχ₀ : χ = 1 <;> by_cases hψ₀ : ψ = 1
   · rw [hχ₀, hψ₀, jacobiSum_triv_triv]

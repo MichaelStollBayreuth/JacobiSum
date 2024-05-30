@@ -6,6 +6,8 @@ section Auxiliary
 ### Auxiliary results
 -/
 
+-- see #13348
+@[to_additive]
 lemma MulEquiv.orderOf_eq {M M' : Type*} [Monoid M] [Monoid M'] (e : M ≃* M') (m : M) :
     orderOf (e m) = orderOf m := by
   rcases (orderOf m).eq_zero_or_pos with h | h
@@ -16,13 +18,6 @@ lemma MulEquiv.orderOf_eq {M M' : Type*} [Monoid M] [Monoid M'] (e : M ≃* M') 
     rwa [← map_pow, e.map_eq_one_iff] at hn
   · simp_rw [orderOf_eq_iff h, ← map_pow, ne_eq, e.map_eq_one_iff]
     exact (orderOf_eq_iff h).mp rfl
-
-lemma Complex.norm_rootOfUnity_eq_one {ζ : ℂˣ} {n : ℕ+} (hζ : ζ ∈ rootsOfUnity n ℂ) :
-    ‖(ζ : ℂ)‖ = 1 := by
-  refine norm_eq_one_of_pow_eq_one ?_ <| n.ne_zero
-  norm_cast
-  rw [show ζ ^ (n : ℕ) = 1 from hζ]
-  rfl
 
 lemma GaussianInt.toComplex_injective : Function.Injective GaussianInt.toComplex :=
   (injective_iff_map_eq_zero _).mpr fun _ ↦ GaussianInt.toComplex_eq_zero.mp

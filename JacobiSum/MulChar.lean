@@ -80,7 +80,7 @@ lemma val_mem_rootsOfUnity (a : Rˣ) {χ : MulChar R R'} :
 lemma starComp_eq_inv (χ : MulChar R ℂ) : χ.starComp = χ⁻¹ := by
   ext1 a
   simp only [starComp_apply, inv_apply_eq_inv']
-  have H := Complex.norm_rootOfUnity_eq_one <| χ.val_mem_rootsOfUnity a
+  have H := Complex.norm_eq_one_of_mem_rootOfUnity <| χ.val_mem_rootsOfUnity a
   exact (Complex.inv_eq_conj H).symm
 
 lemma starComp_apply' (χ : MulChar R ℂ) (a : R) : (starRingEnd ℂ) (χ a) = χ⁻¹ a := by

@@ -6,14 +6,14 @@ import JacobiSum.Auxiliary
 
 namespace AddChar
 
-variable {R R' R'' : Type*} [CommRing R] [CommMonoid R'] [CommRing R'']
-
-lemma val_isUnit (φ : AddChar R R') (a : R) : IsUnit (φ a) :=
+lemma val_isUnit {R R'} [AddGroup R] [Monoid R'] (φ : AddChar R R') (a : R) : IsUnit (φ a) :=
   IsUnit.map φ.toMonoidHom <| Group.isUnit (Multiplicative.ofAdd a)
+
+variable {R R' R'' : Type*} [CommRing R] [CommMonoid R'] [CommMonoid R'']
 
 /-- The composition of a primitive additive character with an injective ring homomorphism
 is also primitive. -/
-lemma isPrimitive_homComp_of_isPrimitive {φ : AddChar R R'} (f : R' →* R'') (hφ : φ.IsPrimitive)
+lemma isPrimitive_homComp_of_isPrimitive {φ : AddChar R R'} {f : R' →* R''} (hφ : φ.IsPrimitive)
     (hf : Function.Injective f) :
     (f.compAddChar φ).IsPrimitive := by
   intro a a_ne_zero
@@ -24,13 +24,12 @@ lemma isPrimitive_homComp_of_isPrimitive {φ : AddChar R R'} (f : R' →* R'') (
 
 lemma val_mem_rootsOfUnity (φ : AddChar R R') (a : R) (h : 0 < ringChar R) :
     (φ.val_isUnit a).unit ∈ rootsOfUnity (ringChar R).toPNat' R' := by
-  rw [mem_rootsOfUnity]
-  simp only [Nat.toPNat'_coe, h, ↓reduceIte, Units.ext_iff, Units.val_pow_eq_pow_val,
-    IsUnit.unit_spec, ← map_nsmul_pow, nsmul_eq_mul, CharP.cast_eq_zero, zero_mul, map_zero_one,
-    Units.val_one]
+  simp only [mem_rootsOfUnity, Nat.toPNat'_coe, h, ↓reduceIte, Units.ext_iff, CharP.cast_eq_zero,
+    Units.val_pow_eq_pow_val, IsUnit.unit_spec, ← map_nsmul_pow, nsmul_eq_mul, zero_mul,
+    map_zero_one, Units.val_one]
 
 /-!
-### Complex-valued Additive characters
+### Complex-valued additive characters
 -/
 
 section Ring
@@ -52,28 +51,23 @@ lemma starComp_apply (hR : 0 < ringChar R) {φ : AddChar R ℂ} (a : R) :
   rw [← starComp_eq_inv hR]
   rfl
 
-private lemma ringChar_complex_ne_ringChar (R : Type*) [CommRing R] [Finite R] :
-    ringChar ℂ ≠ ringChar R := by
-  simpa only [ringChar.eq_zero] using (CharP.ringChar_ne_zero_of_finite R).symm
-
 end Ring
 
 section Field
 
 variable (F : Type*) [Field F] [Finite F] [DecidableEq F]
 
-/--  We define `primChar` to be a primitive additive character on `F` with values in `ℂ`. -/
+private lemma ringChar_ne : ringChar ℂ ≠ ringChar F := by
+  simpa only [ringChar.eq_zero] using (CharP.ringChar_ne_zero_of_finite F).symm
+
+/--  A primitive additive character on the finite field `F` with values in `ℂ`. -/
 noncomputable def FiniteField.primChar_to_Complex : AddChar F ℂ := by
-  refine MonoidHom.compAddChar ?_ (AddChar.primitiveCharFiniteField F ℂ ?_).char
-  · exact (IsCyclotomicExtension.algEquiv ?n ℂ (CyclotomicField ?n ℂ) ℂ :
-            CyclotomicField ?n ℂ →* ℂ)
-  · exact ringChar_complex_ne_ringChar F
+  refine MonoidHom.compAddChar ?_ (primitiveCharFiniteField F ℂ <| ringChar_ne F).char
+  exact (IsCyclotomicExtension.algEquiv ?n ℂ (CyclotomicField ?n ℂ) ℂ : CyclotomicField ?n ℂ →* ℂ)
 
 lemma FiniteField.primChar_to_Complex_isPrimitive : (primChar_to_Complex F).IsPrimitive := by
-  apply AddChar.isPrimitive_homComp_of_isPrimitive
-  apply AddChar.PrimitiveAddChar.prim
-  have h := ringChar_complex_ne_ringChar F
-  let nn := AddChar.PrimitiveAddChar.n (AddChar.primitiveCharFiniteField F ℂ h)
+  refine isPrimitive_homComp_of_isPrimitive (PrimitiveAddChar.prim _) ?_
+  let nn := (primitiveCharFiniteField F ℂ <| ringChar_ne F).n
   exact (IsCyclotomicExtension.algEquiv nn ℂ (CyclotomicField nn ℂ) ℂ).injective
 
 end Field

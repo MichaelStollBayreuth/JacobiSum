@@ -15,11 +15,19 @@ ABSTRACT: Here, based on chapter 8, section 3 & 4 in 'A Classical Introduction t
 
 section Def
 
+-- need `Fintype` instead of `Finite` for `Finset.sum` etc.
 variable {R R' : Type*} [CommRing R] [Fintype R] [DecidableEq R] [CommRing R']
 
 /- The Jacobi sum of two multiplicative characters on a finite commutative ring. -/
 def jacobiSum (χ ψ : MulChar R R') : R' :=
   ∑ x : R, (χ x) * (ψ (1 - x))
+
+private lemma Finset.sum_eq_sum_one_sub {R M : Type*} [Ring R] [Fintype R] [DecidableEq R]
+    [AddCommMonoid M] (f : R → M) :
+    Finset.sum univ f = Finset.sum univ fun x ↦ f (1 - x) := by
+  refine Fintype.sum_bijective (1 - ·) (Function.Involutive.bijective ?_) _ _ fun x ↦ ?_
+  · simp only [Function.Involutive, sub_sub_cancel, implies_true]
+  · simp only [sub_sub_cancel, mul_comm]
 
 lemma jacobiSum_comm (χ ψ : MulChar R R') : jacobiSum χ ψ = jacobiSum ψ χ := by
   simp only [jacobiSum]
@@ -370,8 +378,8 @@ theorem jacobiSum_abs_eq_sqrt {χ ψ : MulChar F ℂ} (hχ : χ.IsNontrivial) (h
     (hχψ : (χ * ψ).IsNontrivial) :
     Complex.abs (jacobiSum χ ψ) = Real.sqrt (Fintype.card F) := by
   -- rewrite jacobiSum as gaussSums
-  let φ := FiniteField.primChar F
-  have hφ : φ.IsPrimitive := FiniteField.primChar_isPrimitive F
+  let φ := AddChar.FiniteField.primChar_to_Complex F
+  have hφ : φ.IsPrimitive := AddChar.FiniteField.primChar_to_Complex_isPrimitive F
   have h : (Fintype.card F : ℂ) ≠ 0 := by
     norm_cast
     simp only [Fintype.card_ne_zero, not_false_eq_true]

@@ -6,43 +6,16 @@ section Auxiliary
 ### Auxiliary results
 -/
 
--- see #13348
-@[to_additive]
-lemma MulEquiv.orderOf_eq {M M' : Type*} [Monoid M] [Monoid M'] (e : M ≃* M') (m : M) :
-    orderOf (e m) = orderOf m := by
-  rcases (orderOf m).eq_zero_or_pos with h | h
-  · rw [h]
-    rw [orderOf_eq_zero_iff'] at h ⊢
-    peel h with n h₀ hn
-    contrapose! hn
-    rwa [← map_pow, e.map_eq_one_iff] at hn
-  · simp_rw [orderOf_eq_iff h, ← map_pow, ne_eq, e.map_eq_one_iff]
-    exact (orderOf_eq_iff h).mp rfl
-
-lemma GaussianInt.toComplex_injective : Function.Injective GaussianInt.toComplex :=
-  (injective_iff_map_eq_zero _).mpr fun _ ↦ GaussianInt.toComplex_eq_zero.mp
-
+-- see #13375
 /-- A version of `IsPrimitiveRoot.eq_pow_of_mem_rootsOfUnity` that takes a natural number `k`
 as argument instead of a `PNat` -/
 lemma IsPrimitiveRoot.eq_pow_of_mem_rootsOfUnity' {R : Type*} [CommRing R] [IsDomain R] {k : ℕ}
     (hk : 0 < k) {ζ : R} (hζ : IsPrimitiveRoot ζ k) {ξ : Rˣ}
     (hξ : ξ ∈ rootsOfUnity (⟨k, hk⟩ : ℕ+) R) :
     ∃ i < k, ζ ^ i = ξ := by
-  have hζ' : IsUnit ζ := hζ.isUnit hk
-  have hζ'' : IsPrimitiveRoot hζ'.unit (⟨k, hk⟩ : ℕ+) := isUnit_unit hk hζ
-  obtain ⟨i, hi₁, hi₂⟩ := hζ''.eq_pow_of_mem_rootsOfUnity hξ
-  refine ⟨i, hi₁, ?_⟩
-  apply_fun ((↑) : Rˣ → R) at hi₂
-  simpa only [Units.val_pow_eq_pow_val, IsUnit.unit_spec] using hi₂
---#check IsPrimitiveRoot.eq_pow_of_pow_eq_one
-
-lemma Finset.sum_eq_sum_one_sub {R M : Type*} [Ring R] [Fintype R] [DecidableEq R]
-    [AddCommMonoid M] (f : R → M) :
-    Finset.sum univ f = Finset.sum univ fun x ↦ f (1 - x) := by
-  refine Fintype.sum_bijective (fun x : R ↦ 1 - x) ?_ _ _ fun x ↦ ?_
-  · refine Function.Involutive.bijective ?_
-    simp only [Function.Involutive, sub_sub_cancel, implies_true]
-  · simp only [sub_sub_cancel, mul_comm]
+  have hζ' : IsPrimitiveRoot (hζ.isUnit hk).unit (⟨k, hk⟩ : ℕ+) := isUnit_unit hk hζ
+  obtain ⟨i, hi₁, hi₂⟩ := hζ'.eq_pow_of_mem_rootsOfUnity hξ
+  simpa only [Units.val_pow_eq_pow_val, IsUnit.unit_spec] using ⟨i, hi₁, congrArg ((↑) : Rˣ → R) hi₂⟩
 
 end Auxiliary
 

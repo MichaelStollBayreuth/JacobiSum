@@ -19,10 +19,8 @@ lemma isPrimitive_homComp_of_isPrimitive {φ : AddChar R R'} (f : R' →* R'') (
   intro a a_ne_zero
   obtain ⟨r, ne_one⟩ := hφ a a_ne_zero
   rw [mulShift_apply] at ne_one
-  simp only [IsNontrivial, mulShift_apply, MonoidHom.coe_compAddChar, Function.comp_apply]
-  use r
-  rw [← f.map_one]
-  exact fun H ↦ ne_one (hf H)
+  simp only [IsNontrivial, mulShift_apply, f.coe_compAddChar, Function.comp_apply]
+  exact ⟨r, fun H ↦ ne_one <| hf <| f.map_one ▸ H⟩
 
 lemma val_mem_rootsOfUnity (φ : AddChar R R') (a : R) (h : 0 < ringChar R) :
     (φ.val_isUnit a).unit ∈ rootsOfUnity (ringChar R).toPNat' R' := by
@@ -30,6 +28,14 @@ lemma val_mem_rootsOfUnity (φ : AddChar R R') (a : R) (h : 0 < ringChar R) :
   simp only [Nat.toPNat'_coe, h, ↓reduceIte, Units.ext_iff, Units.val_pow_eq_pow_val,
     IsUnit.unit_spec, ← map_nsmul_pow, nsmul_eq_mul, CharP.cast_eq_zero, zero_mul, map_zero_one,
     Units.val_one]
+
+/-!
+### Complex-valued Additive characters
+-/
+
+section Ring
+
+variable {R : Type*} [CommRing R]
 
 /-- Post-composing an additive character to `ℂ` with complex conjugation gives the inverse
 character. -/
@@ -46,39 +52,28 @@ lemma starComp_apply (hR : 0 < ringChar R) {φ : AddChar R ℂ} (a : R) :
   rw [← starComp_eq_inv hR]
   rfl
 
-end AddChar
+private lemma ringChar_complex_ne_ringChar (R : Type*) [CommRing R] [Finite R] :
+    ringChar ℂ ≠ ringChar R := by
+  simpa only [ringChar.eq_zero] using (CharP.ringChar_ne_zero_of_finite R).symm
 
-/-!
-### Additive characters on finite fields
--/
+end Ring
 
-variable (F : Type*) [Field F] [Fintype F] [DecidableEq F]
+section Field
 
-namespace FiniteField
-
-/- /-- A generator of the multiplicative group of a finite field. -/
-noncomputable def genMultiplicativeGroup : Group.Generator Fˣ :=
-  (inferInstance : IsCyclic Fˣ).generator
-
-/-- The order of the unit group of a finite field as a `PNat`. -/
-abbrev orderUnits : ℕ+ :=
-  ⟨Fintype.card Fˣ, Fintype.card_pos⟩ -/
-
-lemma ringChar_complex_ne_ringChar : ringChar ℂ ≠ ringChar F := by
-  simpa only [ringChar.eq_zero] using (CharP.ringChar_ne_zero_of_finite F).symm
+variable (F : Type*) [Field F] [Finite F] [DecidableEq F]
 
 /--  We define `primChar` to be a primitive additive character on `F` with values in `ℂ`. -/
-noncomputable def primChar : AddChar F ℂ := by
+noncomputable def FiniteField.primChar_to_Complex : AddChar F ℂ := by
   refine MonoidHom.compAddChar ?_ (AddChar.primitiveCharFiniteField F ℂ ?_).char
   · exact (IsCyclotomicExtension.algEquiv ?n ℂ (CyclotomicField ?n ℂ) ℂ :
             CyclotomicField ?n ℂ →* ℂ)
   · exact ringChar_complex_ne_ringChar F
 
-lemma primChar_isPrimitive : (primChar F).IsPrimitive := by
+lemma FiniteField.primChar_to_Complex_isPrimitive : (primChar_to_Complex F).IsPrimitive := by
   apply AddChar.isPrimitive_homComp_of_isPrimitive
   apply AddChar.PrimitiveAddChar.prim
   have h := ringChar_complex_ne_ringChar F
   let nn := AddChar.PrimitiveAddChar.n (AddChar.primitiveCharFiniteField F ℂ h)
   exact (IsCyclotomicExtension.algEquiv nn ℂ (CyclotomicField nn ℂ) ℂ).injective
 
-end FiniteField
+end Field

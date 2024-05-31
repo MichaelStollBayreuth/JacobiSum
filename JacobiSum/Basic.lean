@@ -1,4 +1,3 @@
-import JacobiSum.AddChar
 import JacobiSum.MulChar
 
 open BigOperators  Finset
@@ -378,8 +377,8 @@ theorem jacobiSum_abs_eq_sqrt {χ ψ : MulChar F ℂ} (hχ : χ.IsNontrivial) (h
     (hχψ : (χ * ψ).IsNontrivial) :
     Complex.abs (jacobiSum χ ψ) = Real.sqrt (Fintype.card F) := by
   -- rewrite jacobiSum as gaussSums
-  let φ := AddChar.FiniteField.primChar_to_Complex F
-  have hφ : φ.IsPrimitive := AddChar.FiniteField.primChar_to_Complex_isPrimitive F
+  let φ := AddChar.FiniteField.primitiveChar_to_Complex F
+  have hφ : φ.IsPrimitive := AddChar.FiniteField.primitiveChar_to_Complex_isPrimitive F
   have h : (Fintype.card F : ℂ) ≠ 0 := by
     norm_cast
     simp only [Fintype.card_ne_zero, not_false_eq_true]

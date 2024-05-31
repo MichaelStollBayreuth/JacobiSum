@@ -32,7 +32,7 @@ def mulEquiv_of_orderOf_eq (hg' : ∀ x, x ∈ Subgroup.zpowers g') (h : orderOf
 variable (hg' : orderOf g' ∣ orderOf (g : G))
 
 /-- If `g` generates the group `G` and `g'` is an element of another group `G'` whose order
-divides that of `g`, then there is a unique homomorphism `G → G'` mapping `g` to `g'`. -/
+divides that of `g`, then there is a homomorphism `G → G'` mapping `g` to `g'`. -/
 noncomputable
 def monoidHom_of_generates : G →* G' where
   toFun x := g' ^ (Classical.choose <| Subgroup.mem_zpowers_iff.mp <| hg x)

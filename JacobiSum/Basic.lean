@@ -1,4 +1,6 @@
 import JacobiSum.MulChar
+import Mathlib.NumberTheory.Zsqrtd.GaussianInt
+import Mathlib.RingTheory.RootsOfUnity.Lemmas
 
 open BigOperators  Finset
 
@@ -11,15 +13,6 @@ ABSTRACT: Here, based on chapter 8, section 3 & 4 in 'A Classical Introduction t
 /-!
 ### Jacobi sums
 -/
-
--- locally increase priorities of "good" instances
-attribute [local instance 1100] MonoidHomClass.toMulHomClass
-attribute [local instance 1100] RingHomClass.toAddMonoidHomClass
-attribute [local instance 1100] Field.isDomain
-attribute [local instance 1100] Monoid.toMulOneClass
-attribute [local instance 1100] CommMonoid.toMonoid
-attribute [local instance 1100] CommRing.toCommMonoid
-attribute [local instance 1100] RingHomClass.toMonoidHomClass
 
 section Def
 

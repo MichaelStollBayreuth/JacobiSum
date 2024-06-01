@@ -1,4 +1,4 @@
-import Mathlib
+import Mathlib.NumberTheory.LegendreSymbol.GaussSum
 
 /-!
 ### Auxiliary results on multiplicative characters

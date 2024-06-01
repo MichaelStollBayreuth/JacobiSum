@@ -1,4 +1,4 @@
-import JacobiSum.Auxiliary
+import Mathlib
 
 /-!
 ### Auxiliary results on multiplicative characters
@@ -133,14 +133,14 @@ noncomputable def ofRootOfUnity {ζ : Rˣ} (hζ : ζ ∈ rootsOfUnity (Monoid.or
     MulChar M R := by
   have : orderOf ζ ∣ (Monoid.orderUnits M) :=
     orderOf_dvd_iff_pow_eq_one.mpr <| (mem_rootsOfUnity _ ζ).mp hζ
-  refine ofUnitHom <| monoidHom_of_generates hg <| this.trans <| dvd_of_eq ?_
+  refine ofUnitHom <| monoidHomOfForallMemZpowers hg <| this.trans <| dvd_of_eq ?_
   rw [orderOf_generator_eq_natCard hg, Nat.card_eq_fintype_card, PNat.mk_coe]
 
 lemma ofRootOfUnity_spec {ζ : Rˣ} (hζ : ζ ∈ rootsOfUnity (Monoid.orderUnits M) R)
     {g : Mˣ} (hg : ∀ x, x ∈ Subgroup.zpowers g) :
     ofRootOfUnity hζ hg g = ζ := by
   simp only [ofRootOfUnity, ofUnitHom_eq, equivToUnitHom_symm_coe,
-    monoidHom_of_generates_apply_gen]
+    monoidHomOfForallMemZpowers_apply_gen]
 
 variable (M R) in
 /-- The group of multiplicative characters on a finite monoid `M` with cyclic unit group `Mˣ`

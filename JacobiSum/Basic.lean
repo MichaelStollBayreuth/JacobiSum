@@ -12,6 +12,15 @@ ABSTRACT: Here, based on chapter 8, section 3 & 4 in 'A Classical Introduction t
 ### Jacobi sums
 -/
 
+-- locally increase priorities of "good" instances
+attribute [local instance 1100] MonoidHomClass.toMulHomClass
+attribute [local instance 1100] RingHomClass.toAddMonoidHomClass
+attribute [local instance 1100] Field.isDomain
+attribute [local instance 1100] Monoid.toMulOneClass
+attribute [local instance 1100] CommMonoid.toMonoid
+attribute [local instance 1100] CommRing.toCommMonoid
+attribute [local instance 1100] RingHomClass.toMonoidHomClass
+
 section Def
 
 -- need `Fintype` instead of `Finite` for `Finset.sum` etc.
@@ -90,7 +99,8 @@ theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 
     obtain ⟨m, hm⟩ : ∃ m : ℕ, Fintype.card F = 1 + m + 1 :=
       Nat.exists_eq_add_of_lt Fintype.one_lt_card
     rw [show 1 + m + 1 = m + 2 by ring] at hm
-    simp only [hm, add_tsub_cancel_right, Nat.cast_add, Nat.cast_ofNat, add_sub_cancel_right]
+    simp only [hm, add_tsub_cancel_right (α := ℕ), Nat.cast_add, Nat.cast_ofNat,
+      add_sub_cancel_right]
 
 /-- A formula for the product of two Gauss sums. -/
 lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :

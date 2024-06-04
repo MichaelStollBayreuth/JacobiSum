@@ -10,9 +10,6 @@ section General
 
 variable {R R' : Type*} [CommMonoid R] [CommMonoidWithZero R']
 
-lemma map_unit (χ : MulChar R R') (a : Rˣ) : IsUnit (χ a) :=
-  IsUnit.map χ <| a.isUnit
-
 lemma equivToUnitHom_mul_apply (χ₁ χ₂ : MulChar R R') (a : Rˣ) :
     equivToUnitHom (χ₁ * χ₂) a = equivToUnitHom χ₁ a * equivToUnitHom χ₂ a := by
   apply_fun ((↑) : R'ˣ → R') using Units.ext
@@ -67,12 +64,11 @@ variable [Fintype R] [DecidableEq R]
 
 /-- The values of a multiplicative character on `R` are `n`th roots of unity, where `n = #Rˣ`. -/
 lemma val_mem_rootsOfUnity (a : Rˣ) {χ : MulChar R R'} :
-    (χ.map_unit a).unit ∈ rootsOfUnity (Fintype.card Rˣ).toPNat' R' := by
+    equivToUnitHom χ a ∈ rootsOfUnity (Fintype.card Rˣ).toPNat' R' := by
   refine (mem_rootsOfUnity _ _).mpr ?_
   simp only [Nat.toPNat'_coe, Fintype.card_pos, ↓reduceIte, Units.ext_iff]
   norm_cast
-  have h : (χ.map_unit a).unit = (equivToUnitHom χ) a := Units.ext rfl
-  rw [h, ← map_pow, ← (equivToUnitHom χ).map_one]
+  rw [← map_pow, ← (equivToUnitHom χ).map_one]
   congr
   exact pow_card_eq_one
 

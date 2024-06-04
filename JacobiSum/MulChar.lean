@@ -43,6 +43,16 @@ section Ring
 
 variable {R R' : Type*} [CommRing R] [CommRing R']
 
+lemma ringHomComp_inv (χ : MulChar R R') {R''} [CommRing R''] {f : R' →+* R''} :
+    (χ.ringHomComp f)⁻¹ = χ⁻¹.ringHomComp f := by
+  ext1 a
+  simp only [ringHomComp_apply, inv_apply]
+
+lemma ringHomComp_mul (χ φ : MulChar R R') {R''} [CommRing R''] {f : R' →+* R''} :
+    χ.ringHomComp f * φ.ringHomComp f = (χ * φ).ringHomComp f := by
+  ext1 a
+  simp only [coeToFun_mul, Pi.mul_apply, ringHomComp_apply, map_mul]
+
 /-- If `χ` is of odd order, then `χ(-1) = 1` -/
 lemma val_neg_one_eq_one_of_odd_order {R'} [CommMonoidWithZero R'] {χ : MulChar R R'} {n : ℕ}
     (hn : Odd n) (hχ : χ ^ n = 1) :

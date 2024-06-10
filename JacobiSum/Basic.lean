@@ -301,7 +301,7 @@ lemma jacobiSum_mul_jacobiSum_inv {F'} [Field F'] (h : ringChar F' ≠ ringChar 
   apply hinj
   rw [map_mul, ← jacobiSum_ringHomComp, ← jacobiSum_ringHomComp]
   have Hχφ : (χ' * φ').IsNontrivial := by
-    rw [ringHomComp_mul]
+    rw [← ringHomComp_mul]
     exact IsNontrivial.comp hχφ hinj
   have Hχφ' : (χ'⁻¹ * φ'⁻¹).IsNontrivial := by
     rwa [← mul_inv, isNontrivial_iff, inv_ne_one, ← isNontrivial_iff]

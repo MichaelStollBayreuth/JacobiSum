@@ -20,19 +20,36 @@ lemma eq_iff {g : Rˣ} (hg : ∀ x, x ∈ Subgroup.zpowers g) (χ₁ χ₂ : Mul
 
 end General
 
+section RingHomComp
+
+variable {M R R' : Type*} [CommMonoid M] [CommRing R] [CommRing R']
+
+@[simp]
+lemma ringHomComp_one (f : R →+* R') : (1 : MulChar M R).ringHomComp f = 1 := by
+  ext1
+  simp only [MulChar.ringHomComp_apply, MulChar.one_apply_coe, map_one]
+
+lemma ringHomComp_inv {M : Type*} [CommRing M] (χ : MulChar M R) (f : R →+* R') :
+    (χ.ringHomComp f)⁻¹ = χ⁻¹.ringHomComp f := by
+  ext1 a
+  simp only [inv_apply, Ring.inverse_unit, ringHomComp_apply]
+
+lemma ringHomComp_mul (χ φ : MulChar M R) (f : R →+* R') :
+    (χ * φ).ringHomComp f = χ.ringHomComp f * φ.ringHomComp f := by
+  ext1 a
+  simp only [ringHomComp_apply, coeToFun_mul, Pi.mul_apply, map_mul]
+
+lemma ringHomComp_pow (χ : MulChar M R) (f : R →+* R') (n : ℕ) :
+    χ.ringHomComp f ^ n = (χ ^ n).ringHomComp f := by
+  induction n
+  case zero => simp only [pow_zero, ringHomComp_one]
+  case succ n ih => simp only [pow_succ, ih, ringHomComp_mul]
+
+end RingHomComp
+
 section Ring
 
 variable {R R' : Type*} [CommRing R] [CommRing R']
-
-lemma ringHomComp_inv (χ : MulChar R R') {R''} [CommRing R''] {f : R' →+* R''} :
-    (χ.ringHomComp f)⁻¹ = χ⁻¹.ringHomComp f := by
-  ext1 a
-  simp only [ringHomComp_apply, inv_apply]
-
-lemma ringHomComp_mul (χ φ : MulChar R R') {R''} [CommRing R''] {f : R' →+* R''} :
-    χ.ringHomComp f * φ.ringHomComp f = (χ * φ).ringHomComp f := by
-  ext1 a
-  simp only [coeToFun_mul, Pi.mul_apply, ringHomComp_apply, map_mul]
 
 /-- Define the conjugation of a multiplicative character by conjugating pointwise. -/
 @[simps]

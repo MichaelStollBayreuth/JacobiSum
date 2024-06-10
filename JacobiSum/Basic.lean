@@ -100,7 +100,7 @@ lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
     gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
   rw [gaussSum, gaussSum, sum_mul_sum]
   conv => enter [1, 2, x, 2, x_1]; rw [mul_mul_mul_comm]
-  simp only [← ψ.map_add_mul]
+  simp only [← ψ.map_add_eq_mul]
   have sum_eq x : ∑ y : F, χ x * φ y * ψ (x + y) = ∑ y : F, χ x * φ (y - x) * ψ y := by
     rw [sum_bij (fun a _ ↦ a + x)]
     · simp only [mem_univ, forall_true_left, forall_const]
@@ -243,7 +243,7 @@ theorem jacobiSum_nontriv_nontriv {χ φ : MulChar F R} (h : (χ * φ).IsNontriv
   conv =>
     enter [2, 2, 2, x]
     rw [zero_sub, neg_eq_neg_one_mul x, map_mul, mul_left_comm (χ x) (φ (-1)),
-      ← MulChar.mul_apply, ψ.map_zero_one, mul_one]
+      ← MulChar.mul_apply, ψ.map_zero_eq_one, mul_one]
   rw [← mul_sum _ _ (φ (-1)), h.sum_eq_zero, mul_zero, add_zero]
   -- write `x_1 = x*(x_1/x)`
   have sum_eq : ∀ t ∈ univ \ {0}, (∑ x : F, χ x * φ (t - x)) * ψ t =

@@ -192,11 +192,10 @@ variable {F}
 /-- If a multiplicative character `χ` has order `n`, then all powers `χ^m` with `0 < m < n`
 are nontrivial. -/
 lemma isNontrivial_pow_of_lt (χ : MulChar F R) :
-    ∀ m ∈ Finset.Ico 1 (orderOf χ), (χ ^ m).IsNontrivial := by
+    ∀ m ∈ Finset.Ico 1 (orderOf χ), χ ^ m ≠ 1 := by
   intro m hm
   rw [Finset.mem_Ico] at hm
   obtain ⟨hm₁, hmn⟩ := hm
-  rw [MulChar.isNontrivial_iff]
   exact ((orderOf_eq_iff <| (zero_lt_one.trans_le hm₁).trans hmn).mp rfl).2 _ hmn hm₁
 
 /- The non-zero values of a multiplicative character of order `n` are `n`th roots of unity -/
@@ -266,12 +265,9 @@ lemma val_mem_algebraAdjoin {χ : MulChar F R} {μ : R} (hμ : IsPrimitiveRoot �
 
 /-- The Gauss sum of a nontrivial character on a finite field does not vanish. -/
 lemma _root_.gaussSum_ne_zero_of_nontrivial (h : (Fintype.card F : R) ≠ 0) {χ : MulChar F R}
-    (hχ : χ.IsNontrivial) {ψ : AddChar F R} (hψ : ψ.IsPrimitive) :
-    gaussSum χ ψ ≠ 0 := by
-  intro H
-  have := gaussSum_mul_gaussSum_eq_card hχ hψ
-  simp only [H, zero_mul] at this
-  exact h this.symm
+    (hχ : χ ≠ 1) {ψ : AddChar F R} (hψ : ψ.IsPrimitive) :
+    gaussSum χ ψ ≠ 0 :=
+  fun H ↦ h.symm <| zero_mul (gaussSum χ⁻¹ _) ▸ H ▸ gaussSum_mul_gaussSum_eq_card hχ hψ
 
 end FiniteField
 

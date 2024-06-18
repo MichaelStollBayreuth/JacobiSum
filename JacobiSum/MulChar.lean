@@ -61,9 +61,8 @@ variable [Fintype R] [DecidableEq R]
 
 /-- The values of a multiplicative character on `R` are `n`th roots of unity, where `n = #Rˣ`. -/
 lemma val_mem_rootsOfUnity (a : Rˣ) {χ : MulChar R R'} :
-    equivToUnitHom χ a ∈ rootsOfUnity (Fintype.card Rˣ).toPNat' R' := by
-  refine (mem_rootsOfUnity _ _).mpr ?_
-  simp only [Nat.toPNat'_coe, Fintype.card_pos, ↓reduceIte, Units.ext_iff]
+    equivToUnitHom χ a ∈ rootsOfUnity ⟨Fintype.card Rˣ, Fintype.card_pos⟩ R' := by
+  rw [mem_rootsOfUnity, Units.ext_iff]
   norm_cast
   rw [← map_pow, ← (equivToUnitHom χ).map_one]
   congr

@@ -52,15 +52,10 @@ section Ring
 variable {R R' : Type*} [CommRing R] [CommRing R']
 
 /-- Define the conjugation of a multiplicative character by conjugating pointwise. -/
-@[simps]
+@[simps!]
 def starComp [StarRing R'] (χ : MulChar R R') : MulChar R R' :=
-  { (starRingEnd R').toMonoidHom.comp χ.toMonoidHom with
-    toFun := fun a ↦ (starRingEnd R') (χ a)
-    map_nonunit' := by
-      intro a ha
-      simpa only [show χ a = 0 from χ.map_nonunit' a ha]
-        using RingHom.map_zero (starRingEnd R')
-  }
+  χ.ringHomComp (starRingEnd R')
+
 
 variable [Fintype R] [DecidableEq R]
 

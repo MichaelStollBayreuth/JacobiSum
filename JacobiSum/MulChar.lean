@@ -170,7 +170,7 @@ lemma exists_mulChar_orderOf {n : ℕ} (h : n ∣ Fintype.card F - 1) [IsDomain 
     exact ((Nat.le_of_dvd hm₀ <| hζ.dvd_of_pow_eq_one _ h).trans_lt hm).false
 
 /-- If there is a multiplicative character of order `n` on `F`, then `#F ≡ 1 mod n`. -/
-lemma dvd_card_sub_one (χ : MulChar F R) : orderOf χ ∣ Fintype.card F - 1 := by
+lemma orderOf_dvd_card_sub_one (χ : MulChar F R) : orderOf χ ∣ Fintype.card F - 1 := by
   rw [← Fintype.card_units]
   exact orderOf_dvd_of_pow_eq_one χ.pow_card_eq_one
 

@@ -118,7 +118,7 @@ private
 lemma MulChar.val_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (hχ : χ ^ n = 1)
     (hμ : IsPrimitiveRoot μ n) {x : F} (hx : x ≠ 0) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, χ x - 1 = z * (μ - 1) := by
-  obtain ⟨k, _, hk⟩ := exists_val_eq_pow hn hχ hμ hx
+  obtain ⟨k, _, hk⟩ := exists_apply_eq_pow hn hχ hμ hx
   refine hk ▸ ⟨(Finset.range k).sum (μ ^ ·), ?_, (geom_sum_mul μ k).symm⟩
   exact Subalgebra.sum_mem _ fun m _ ↦ Subalgebra.pow_mem _ (self_mem_adjoin_singleton _ μ) _
 
@@ -144,7 +144,7 @@ lemma jacobiSum_mem_algebraAdjoin {χ : MulChar F R} {μ : R} (hμ : IsPrimitive
     jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
   simp_rw [jacobiSum, ← map_mul χ]
   apply Subalgebra.sum_mem
-  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin hμ _
+  exact fun _ _ ↦ MulChar.apply_mem_algebraAdjoin hμ _
 
 /-- If `χ` is a multiplicative character satisfying `χ^n = 1` on a finite field `F` with values in
 an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
@@ -154,7 +154,7 @@ lemma jacobiSum_mem_algebraAdjoin_of_pow_eq {n : ℕ} (hn : n ≠ 0) {χ : MulCh
     jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
   simp_rw [jacobiSum, ← map_mul χ]
   apply Subalgebra.sum_mem
-  exact fun _ _ ↦ MulChar.val_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
+  exact fun _ _ ↦ MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
 
 /-- If `χ` is a nontrivial multiplicative character on a finite field `F`, then `J(1,χ) = -1`. -/
 theorem jacobiSum_triv_nontriv {χ : MulChar F R} (hχ : χ ≠ 1) :
@@ -400,9 +400,8 @@ lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F
     Complex.abs (gaussSum χ φ) = Real.sqrt (Fintype.card F) := by
   have hF : 0 < ringChar F := Nat.pos_of_ne_zero <| CharP.ringChar_ne_zero_of_finite F
   have gauss_inv : gaussSum χ⁻¹ φ⁻¹ = star (gaussSum χ φ) := by
-    rw [← χ.starComp_eq_inv, gaussSum, gaussSum]
-    simp only [MulChar.starComp_apply, star_sum, star_mul', RCLike.star_def]
-    simp_rw [MulChar.starComp_apply', AddChar.starComp_apply hF]
+    rw [← χ.star_eq_inv, gaussSum, gaussSum]
+    simp only [MulChar.star_apply, RCLike.star_def, star_sum, star_mul', AddChar.starComp_apply hF]
   have := gaussSum_mul_gaussSum_eq_card hχ hφ
   rw [gauss_inv, Complex.star_def, Complex.mul_conj] at this
   norm_cast at this

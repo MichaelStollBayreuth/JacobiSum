@@ -127,7 +127,7 @@ variable [IsDomain R]
 
 open Algebra in
 private
-lemma MulChar.val_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (hχ : χ ^ n = 1)
+lemma MulChar.apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (hχ : χ ^ n = 1)
     (hμ : IsPrimitiveRoot μ n) {x : F} (hx : x ≠ 0) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, χ x - 1 = z * (μ - 1) := by
   obtain ⟨k, _, hk⟩ := exists_apply_eq_pow hn hχ hμ hx
@@ -135,7 +135,7 @@ lemma MulChar.val_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R} (
   exact Subalgebra.sum_mem _ fun m _ ↦ Subalgebra.pow_mem _ (self_mem_adjoin_singleton _ μ) _
 
 private
-lemma MulChar.val_sub_one_mul_val_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R} {μ : R}
+lemma MulChar.apply_sub_one_mul_apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R} {μ : R}
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hμ : IsPrimitiveRoot μ n) (x : F) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, (χ x - 1) * (ψ (1 - x) - 1) = z * (μ - 1) ^ 2 := by
   rcases eq_or_ne x 0 with rfl | hx₀
@@ -143,8 +143,8 @@ lemma MulChar.val_sub_one_mul_val_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulC
   rcases eq_or_ne x 1 with rfl | hx₁
   · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
   rw [ne_comm, ← sub_ne_zero] at hx₁
-  obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.val_sub_one hn hχ hμ hx₀
-  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.val_sub_one hn hψ hμ hx₁
+  obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.apply_sub_one hn hχ hμ hx₀
+  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.apply_sub_one hn hψ hμ hx₁
   refine ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, ?_⟩
   rw [Hz₁, Hz₂]
   ring
@@ -205,9 +205,9 @@ lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {
       add_zero]
   · rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ₀,
       MulChar.sum_eq_zero_of_ne_one hψ₀, hq]
-    let Z x := Classical.choose <| MulChar.val_sub_one_mul_val_sub_one (by omega) hχ hψ hμ x
+    let Z x := Classical.choose <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
     have Zdef x : Z x ∈ Algebra.adjoin ℤ {μ} ∧ (χ x - 1) * (ψ (1 - x) - 1) = Z x * (μ - 1) ^ 2 :=
-      Classical.choose_spec <| MulChar.val_sub_one_mul_val_sub_one (by omega) hχ hψ hμ x
+      Classical.choose_spec <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
     refine ⟨-q * z₁ + ∑ x ∈ univ \ {0, 1}, Z x, ?_, ?_⟩
     · refine Subalgebra.add_mem _ (Subalgebra.mul_mem _ (Subalgebra.neg_mem _ ?_) hz₁) ?_
       · exact Subalgebra.natCast_mem ..

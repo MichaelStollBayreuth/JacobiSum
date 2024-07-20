@@ -1,14 +1,26 @@
-import JacobiSum.MulChar
 import Mathlib.NumberTheory.Zsqrtd.GaussianInt
 import Mathlib.RingTheory.RootsOfUnity.Lemmas
+import Mathlib.NumberTheory.MulChar.Lemmas
+import Mathlib.NumberTheory.GaussSum
 
-open BigOperators  Finset
+open BigOperators Finset
 
 /-
 ABSTRACT: Here, based on chapter 8, section 3 & 4 in 'A Classical Introduction to Modern Number Theory' by K. Ireland and M. Rosen,
           we provide the formalization of the definition as well as some statements about Jacobi sums and the
           necessary preparations.
 -/
+
+/-!
+### A result on Gauss sums
+-/
+
+/-- The Gauss sum of a nontrivial character on a finite field does not vanish. -/
+lemma gaussSum_ne_zero_of_nontrivial {F R} [Field F] [Fintype F] [DecidableEq F] [CommRing R]
+    [IsDomain R] (h : (Fintype.card F : R) ≠ 0) {χ : MulChar F R} (hχ : χ ≠ 1) {ψ : AddChar F R}
+    (hψ : ψ.IsPrimitive) :
+    gaussSum χ ψ ≠ 0 :=
+  fun H ↦ h.symm <| zero_mul (gaussSum χ⁻¹ _) ▸ H ▸ gaussSum_mul_gaussSum_eq_card hχ hψ
 
 /-!
 ### Jacobi sums
@@ -365,8 +377,7 @@ theorem gaussSum_pow_eq_prod_jacobiSum {χ : MulChar F R} {ψ : AddChar F R} (h�
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
           have chi_pow_i : χ * (χ ^ i) ≠ 1 := by
             rw [← pow_succ']
-            refine isNontrivial_pow_of_lt χ _ ?_
-            simp only [mem_Ico, le_add_iff_nonneg_left, zero_le, i_lt_n, true_and]
+            exact pow_ne_one_of_lt_orderOf' (by omega) (by omega)
           rw [mul_comm, ← jacobiSum_nontriv_nontriv chi_pow_i, mul_comm, ← pow_succ']
         apply_fun (· * gaussSum χ ψ) at ih
         rw [mul_assoc, mul_comm (Finset.prod ..) (gaussSum χ ψ), ← pow_succ, ← mul_assoc,
@@ -377,10 +388,8 @@ theorem gaussSum_pow_eq_prod_jacobiSum {χ : MulChar F R} {ψ : AddChar F R} (h�
   -- get equality for `i = n-1`
   have gauss_pow_n_sub := pow_gauss' (n - 1) (by simp only [mem_Ico]; omega)
   have hχ₁ : χ ≠ 1 := by
-    convert isNontrivial_pow_of_lt χ 1 ?_
-    · exact (pow_one χ).symm
-    · simp only [mem_Ico, le_refl, true_and]
-      omega
+    convert pow_ne_one_of_lt_orderOf' (x := χ) one_ne_zero (by omega)
+    exact (pow_one χ).symm
   -- multiply again with `g(χ)`
   apply_fun (· * gaussSum χ ψ) at gauss_pow_n_sub
   rw [← pow_succ, Nat.sub_one_add_one_eq_of_pos (by omega), mul_right_comm, mul_comm (gaussSum ..),
@@ -442,11 +451,11 @@ theorem Nat.prime_sq_add_sq' {p : ℕ} [hp : Fact p.Prime] (hp : p % 4 = 1) :
     rw [orderOf_eq_iff (by norm_num)]
     exact ⟨rfl, by decide⟩
   obtain ⟨χ, hχ⟩ := exists_mulChar_orderOf (ZMod p) hp' hI
-  have h₁ : 1 ∈ Ico 1 (orderOf χ) := by rw [hχ]; norm_num
-  have h₂ : 2 ∈ Ico 1 (orderOf χ) := by rw [hχ]; norm_num
-  have hχ₁ := isNontrivial_pow_of_lt χ 1 h₁
+  have h₁ : 1 < orderOf χ := by rw [hχ]; norm_num
+  have h₂ : 2 < orderOf χ := by rw [hχ]; norm_num
+  have hχ₁ := pow_ne_one_of_lt_orderOf' one_ne_zero h₁
   rw [pow_one] at hχ₁
-  have hχ₂ := isNontrivial_pow_of_lt χ 2 h₂
+  have hχ₂ := pow_ne_one_of_lt_orderOf' two_ne_zero h₂
   rw [pow_two] at hχ₂
   let f : GaussianInt →+* ℂ := GaussianInt.toComplex
   have hJ := jacobiSum_ringHomComp χ χ f

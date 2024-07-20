@@ -107,7 +107,7 @@ theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 
     simp only [hm, add_tsub_cancel_right (α := ℕ), Nat.cast_add, Nat.cast_ofNat,
       add_sub_cancel_right]
 
-/-- A formula for the product of two Gauss sums. -/
+/-- A formula for the product of two Gauss sums with the same additive character. -/
 lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
     gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
   rw [gaussSum, gaussSum, sum_mul_sum]

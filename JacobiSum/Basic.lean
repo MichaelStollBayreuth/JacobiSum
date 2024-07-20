@@ -1,7 +1,7 @@
+import Mathlib.NumberTheory.GaussSum
+import Mathlib.NumberTheory.MulChar.Lemmas
 import Mathlib.NumberTheory.Zsqrtd.GaussianInt
 import Mathlib.RingTheory.RootsOfUnity.Lemmas
-import Mathlib.NumberTheory.MulChar.Lemmas
-import Mathlib.NumberTheory.GaussSum
 
 open BigOperators Finset
 

@@ -377,7 +377,7 @@ theorem gaussSum_pow_eq_prod_jacobiSum {χ : MulChar F R} {ψ : AddChar F R} (h�
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
           have chi_pow_i : χ * (χ ^ i) ≠ 1 := by
             rw [← pow_succ']
-            exact pow_ne_one_of_lt_orderOf' (by omega) (by omega)
+            exact pow_ne_one_of_lt_orderOf (by omega) (by omega)
           rw [mul_comm, ← jacobiSum_nontriv_nontriv chi_pow_i, mul_comm, ← pow_succ']
         apply_fun (· * gaussSum χ ψ) at ih
         rw [mul_assoc, mul_comm (Finset.prod ..) (gaussSum χ ψ), ← pow_succ, ← mul_assoc,
@@ -388,7 +388,7 @@ theorem gaussSum_pow_eq_prod_jacobiSum {χ : MulChar F R} {ψ : AddChar F R} (h�
   -- get equality for `i = n-1`
   have gauss_pow_n_sub := pow_gauss' (n - 1) (by simp only [mem_Ico]; omega)
   have hχ₁ : χ ≠ 1 := by
-    convert pow_ne_one_of_lt_orderOf' (x := χ) one_ne_zero (by omega)
+    convert pow_ne_one_of_lt_orderOf (x := χ) one_ne_zero (by omega)
     exact (pow_one χ).symm
   -- multiply again with `g(χ)`
   apply_fun (· * gaussSum χ ψ) at gauss_pow_n_sub
@@ -453,9 +453,9 @@ theorem Nat.prime_sq_add_sq' {p : ℕ} [hp : Fact p.Prime] (hp : p % 4 = 1) :
   obtain ⟨χ, hχ⟩ := exists_mulChar_orderOf (ZMod p) hp' hI
   have h₁ : 1 < orderOf χ := by rw [hχ]; norm_num
   have h₂ : 2 < orderOf χ := by rw [hχ]; norm_num
-  have hχ₁ := pow_ne_one_of_lt_orderOf' one_ne_zero h₁
+  have hχ₁ := pow_ne_one_of_lt_orderOf one_ne_zero h₁
   rw [pow_one] at hχ₁
-  have hχ₂ := pow_ne_one_of_lt_orderOf' two_ne_zero h₂
+  have hχ₂ := pow_ne_one_of_lt_orderOf two_ne_zero h₂
   rw [pow_two] at hχ₂
   let f : GaussianInt →+* ℂ := GaussianInt.toComplex
   have hJ := jacobiSum_ringHomComp χ χ f

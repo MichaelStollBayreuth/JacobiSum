@@ -3,13 +3,26 @@ import Mathlib.NumberTheory.MulChar.Lemmas
 import Mathlib.NumberTheory.Zsqrtd.GaussianInt
 import Mathlib.RingTheory.RootsOfUnity.Lemmas
 
-open BigOperators Finset
+/-!
+# Jacobi Sums
 
-/-
-ABSTRACT: Here, based on chapter 8, section 3 & 4 in 'A Classical Introduction to Modern Number Theory' by K. Ireland and M. Rosen,
-          we provide the formalization of the definition as well as some statements about Jacobi sums and the
-          necessary preparations.
+This file defines the *Jacobi sum* of two multiplicative characters `χ` and `ψ` on a finite
+commutative ring `R` with values in another commutative ring `R'`:
+
+`jacobiSum χ ψ = ∑ x : R, χ x * ψ (1 - x)`
+
+(see `jacobiSum`) and provides some basic results and API lemmas on Jacobi sums.
+
+## References
+
+We essentially follow
+* [K. Ireland, M. Rosen, *A classical introduction to modern number theory*
+   (Section 8.3)][IrelandRosen1990]
+
+but generalize where appropriate.
 -/
+
+open BigOperators Finset
 
 /-!
 ### A result on Gauss sums
@@ -31,9 +44,9 @@ section Def
 -- need `Fintype` instead of `Finite` for `Finset.sum` etc.
 variable {R R' : Type*} [CommRing R] [Fintype R] [DecidableEq R] [CommRing R']
 
-/- The Jacobi sum of two multiplicative characters on a finite commutative ring. -/
+/- The *Jacobi sum* of two multiplicative characters on a finite commutative ring. -/
 def jacobiSum (χ ψ : MulChar R R') : R' :=
-  ∑ x : R, (χ x) * (ψ (1 - x))
+  ∑ x : R, χ x * ψ (1 - x)
 
 private lemma Finset.sum_eq_sum_one_sub {R M : Type*} [Ring R] [Fintype R] [DecidableEq R]
     [AddCommMonoid M] (f : R → M) :

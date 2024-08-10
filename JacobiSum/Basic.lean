@@ -25,7 +25,7 @@ but generalize where appropriate.
 open BigOperators Finset
 
 /-!
-### A result on Gauss sums
+### Two results on Gauss sums
 -/
 
 /-- The Gauss sum of a nontrivial character on a finite field does not vanish. -/
@@ -34,9 +34,26 @@ lemma gaussSum_ne_zero_of_nontrivial {F R} [Field F] [Fintype F] [DecidableEq F]
     (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ ≠ 0 :=
   fun H ↦ h.symm <| zero_mul (gaussSum χ⁻¹ _) ▸ H ▸ gaussSum_mul_gaussSum_eq_card hχ hψ
+-- #find_home gaussSum_ne_zero_of_nontrivial -- [Mathlib.NumberTheory.GaussSum]
+
+/-- A formula for the product of two Gauss sums with the same additive character. -/
+lemma gaussSum_mul {F R} [CommRing F] [Fintype F] [DecidableEq F] [CommRing R] (χ φ : MulChar F R)
+    (ψ : AddChar F R) :
+    gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
+  rw [gaussSum, gaussSum, sum_mul_sum]
+  conv => enter [1, 2, x, 2, x_1]; rw [mul_mul_mul_comm]
+  simp only [← ψ.map_add_eq_mul]
+  have sum_eq x : ∑ y : F, χ x * φ y * ψ (x + y) = ∑ y : F, χ x * φ (y - x) * ψ y := by
+    rw [sum_bij (fun a _ ↦ a + x)]
+    · simp only [mem_univ, forall_true_left, forall_const]
+    · simp only [mem_univ, add_left_inj, imp_self, forall_const]
+    · exact fun b _ ↦ ⟨b - x, mem_univ _, by rw [sub_add_cancel]⟩
+    · exact fun a _ ↦ by rw [add_sub_cancel_right, add_comm]
+  rw [sum_congr rfl fun x _ ↦ sum_eq x, sum_comm]
+
 
 /-!
-### Jacobi sums
+### Jacobi sums: definition and first properties
 -/
 
 section Def
@@ -53,12 +70,12 @@ private lemma Finset.sum_eq_sum_one_sub {R M : Type*} [Ring R] [Fintype R] [Deci
     Finset.sum univ f = Finset.sum univ fun x ↦ f (1 - x) := by
   refine Fintype.sum_bijective (1 - ·) (Function.Involutive.bijective ?_) _ _ fun x ↦ ?_
   · simp only [Function.Involutive, sub_sub_cancel, implies_true]
-  · simp only [sub_sub_cancel, mul_comm]
+  · simp only [sub_sub_cancel]
 
 lemma jacobiSum_comm (χ ψ : MulChar R R') : jacobiSum χ ψ = jacobiSum ψ χ := by
   simp only [jacobiSum]
-  convert sum_eq_sum_one_sub (fun x ↦ χ x * ψ (1 - x)) using 2 with x
-  simp only [sub_sub_cancel, mul_comm]
+  convert sum_eq_sum_one_sub fun x ↦ χ x * ψ (1 - x) using 2 with x
+  simp only [mul_comm, sub_sub_cancel]
 
 /-- The Jacobi sum is compatible with ring homomorphisms. -/
 lemma jacobiSum_ringHomComp {R'' : Type*} [CommRing R''] (χ ψ : MulChar R R') (f : R' →+* R'') :
@@ -100,12 +117,12 @@ lemma jacobiSum_eq_aux (χ ψ : MulChar F R) :
   rw [sum_pair zero_ne_one, sub_zero, ψ.map_one, χ.map_one, sub_self, mul_zero, zero_mul, add_zero]
 
 /-- If `1` is the trivial multiplicative character on a finite field `F`, then `J(1,1) = #F-2`. -/
-theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 2 := by
+theorem jacobiSum_triv_triv: jacobiSum (1 : MulChar F R) 1 = Fintype.card F - 2 := by
   rw [show 1 = MulChar.trivial F R from rfl, jacobiSum_eq_sum_sdiff]
   have : ∀ x ∈ univ \ {0, 1}, (MulChar.trivial F R) x * (MulChar.trivial F R) (1 - x) = 1 := by
     intros x hx
     have hx' : IsUnit (x * (1 - x)) := by
-      simp only [mem_sdiff, mem_univ, mem_insert, mem_singleton, not_or, true_and, ← ne_eq] at hx
+      simp only [mem_sdiff, mem_univ, mem_insert, mem_singleton, not_or, ← ne_eq, true_and] at hx
       simp only [isUnit_iff_ne_zero]
       exact mul_ne_zero hx.1 <| sub_ne_zero.mpr hx.2.symm
     rw [← map_mul, MulChar.trivial_apply, if_pos hx']
@@ -119,20 +136,6 @@ theorem jacobiSum_triv_triv: (jacobiSum (1 : MulChar F R) 1) = Fintype.card F - 
     rw [show 1 + m + 1 = m + 2 by ring] at hm
     simp only [hm, add_tsub_cancel_right (α := ℕ), Nat.cast_add, Nat.cast_ofNat,
       add_sub_cancel_right]
-
-/-- A formula for the product of two Gauss sums with the same additive character. -/
-lemma gaussSum_mul (χ φ : MulChar F R) (ψ : AddChar F R) :
-    gaussSum χ ψ * gaussSum φ ψ = ∑ t : F, ∑ x : F, χ x * φ (t - x) * ψ t := by
-  rw [gaussSum, gaussSum, sum_mul_sum]
-  conv => enter [1, 2, x, 2, x_1]; rw [mul_mul_mul_comm]
-  simp only [← ψ.map_add_eq_mul]
-  have sum_eq x : ∑ y : F, χ x * φ y * ψ (x + y) = ∑ y : F, χ x * φ (y - x) * ψ y := by
-    rw [sum_bij (fun a _ ↦ a + x)]
-    · simp only [mem_univ, forall_true_left, forall_const]
-    · simp only [mem_univ, add_left_inj, imp_self, forall_const]
-    · exact fun b _ ↦ ⟨b - x, mem_univ _, by rw [sub_add_cancel]⟩
-    · exact fun a _ ↦ by rw [add_sub_cancel_right, add_comm]
-  rw [sum_congr rfl fun x _ ↦ sum_eq x, sum_comm]
 
 
 -- From here on, we assume that the target `R` is an integral domain.
@@ -166,7 +169,7 @@ lemma MulChar.apply_sub_one_mul_apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : 
 an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
 then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ R`. -/
 lemma jacobiSum_mem_algebraAdjoin {χ : MulChar F R} {μ : R} (hμ : IsPrimitiveRoot μ (orderOf χ)) :
-    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
+    jacobiSum χ χ ∈ Algebra.adjoin ℤ {μ} := by
   simp_rw [jacobiSum, ← map_mul χ]
   apply Subalgebra.sum_mem
   exact fun _ _ ↦ MulChar.apply_mem_algebraAdjoin hμ _
@@ -176,7 +179,7 @@ an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
 then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ R`. -/
 lemma jacobiSum_mem_algebraAdjoin_of_pow_eq {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R}
     (hχ : χ ^ n = 1) {μ : R} (hμ : IsPrimitiveRoot μ n) :
-    jacobiSum χ χ ∈ (Algebra.adjoin ℤ {μ}) := by
+    jacobiSum χ χ ∈ Algebra.adjoin ℤ {μ} := by
   simp_rw [jacobiSum, ← map_mul χ]
   apply Subalgebra.sum_mem
   exact fun _ _ ↦ MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
@@ -214,10 +217,8 @@ lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {
   · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
     rw [hχ₀, jacobiSum_triv_nontriv hψ₀, zero_mul, add_zero]
   · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
-    rw [jacobiSum_comm, hψ₀, jacobiSum_triv_nontriv hχ₀, zero_mul,
-      add_zero]
-  · rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ₀,
-      MulChar.sum_eq_zero_of_ne_one hψ₀, hq]
+    rw [jacobiSum_comm, hψ₀, jacobiSum_triv_nontriv hχ₀, zero_mul, add_zero]
+  · rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ₀, MulChar.sum_eq_zero_of_ne_one hψ₀, hq]
     let Z x := Classical.choose <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
     have Zdef x : Z x ∈ Algebra.adjoin ℤ {μ} ∧ (χ x - 1) * (ψ (1 - x) - 1) = Z x * (μ - 1) ^ 2 :=
       Classical.choose_spec <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
@@ -233,7 +234,7 @@ lemma jacobiSum_eq_neg_one_add {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {
 
 /-- If `χ` is a nontrivial multiplicative character on a finite field `F`,
 then the Jacobi sum `J(χ,χ⁻¹) = -χ(-1)`. -/
-theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum χ χ⁻¹ = -(χ (-1)) := by
+theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum χ χ⁻¹ = -χ (-1) := by
   rw [jacobiSum]
   conv => enter [1, 2, x]; rw [MulChar.inv_apply', ← map_mul, ← div_eq_mul_inv]
   -- remove zero summand for `x = 1`
@@ -245,7 +246,7 @@ theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum χ χ⁻¹
       rw [div_eq_iff <| sub_ne_zero.mpr ((ne_eq ..).symm ▸ hx).symm, mul_sub, mul_one,
         neg_one_mul, sub_neg_eq_add, self_eq_add_left, neg_eq_zero]
       exact one_ne_zero
-    · simp only [mem_sdiff, mem_univ, mem_singleton, true_and, one_div] at hy ⊢
+    · simp only [mem_sdiff, mem_univ, mem_singleton, true_and] at hy ⊢
       rw [div_eq_iff fun h ↦ hy <| eq_neg_of_add_eq_zero_right h, one_mul, self_eq_add_left]
       exact one_ne_zero
     · simp only [mem_sdiff, mem_univ, mem_singleton, true_and] at hx
@@ -261,8 +262,7 @@ theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum χ χ⁻¹
 
 /-- If `χ` and `ψ` are multiplicative characters on a finite field `F` such that
 `χψ` is nontrivial, then `g(χ) * J(χ,ψ) = g(χ) * g(ψ)`. -/
-theorem jacobiSum_nontriv_nontriv {χ φ : MulChar F R} (h : χ * φ ≠ 1)
-    (ψ : AddChar F R) :
+theorem jacobiSum_nontriv_nontriv {χ φ : MulChar F R} (h : χ * φ ≠ 1) (ψ : AddChar F R) :
     gaussSum (χ * φ) ψ * jacobiSum χ φ = gaussSum χ ψ * gaussSum φ ψ := by
   rw [gaussSum_mul _ _ ψ, sum_eq_sum_diff_singleton_add (mem_univ (0 : F))]
   conv =>
@@ -381,11 +381,11 @@ theorem gaussSum_pow_eq_prod_jacobiSum {χ : MulChar F R} {ψ : AddChar F R} (h�
     obtain ⟨one_le_i, i_lt_n⟩ := hi
     induction i, one_le_i using Nat.le_induction with
     | base =>
-        simp only [pow_one, ge_iff_le, le_refl, tsub_eq_zero_of_le, gt_iff_lt, zero_lt_one,
-          Icc_eq_empty_of_lt, prod_empty, mul_one]
+        simp only [pow_one, le_refl, tsub_eq_zero_of_le, zero_lt_one, Icc_eq_empty_of_lt,
+          prod_empty, mul_one]
     | succ i hi ih =>
         simp only [add_tsub_cancel_right]
-        specialize ih (lt_trans (Nat.lt_succ_self i) i_lt_n)
+        specialize ih <| lt_trans (Nat.lt_succ_self i) i_lt_n
         have gauss_rw : gaussSum (χ ^ i) ψ * gaussSum χ ψ =
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
           have chi_pow_i : χ * (χ ^ i) ≠ 1 := by

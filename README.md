@@ -10,8 +10,6 @@ We use this as a staging area for Mathlib.
 The code is based on work done by Alexander Spahl for his BSc thesis in Bayreuth.
 
 Files:
-* [__JacobiSum/MulChar.lean__](JacobiSum/MulChar.lean):
-  additional API for multiplicative characters
 * [__JacobiSum/Basic.lean__](JacobiSum/Basic.lean):
   definition of the Jacobi sum and general properties
 * [__JacobiSum/Cubic.lean__](JacobiSum/Cubic.lean):

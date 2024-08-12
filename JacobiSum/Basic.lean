@@ -120,8 +120,7 @@ theorem jacobiSum_triv_triv :
 variable [IsDomain R]
 
 /-- If `χ` is a nontrivial multiplicative character on a finite field `F`, then `J(1,χ) = -1`. -/
-theorem jacobiSum_triv_nontriv {χ : MulChar F R} (hχ : χ ≠ 1) :
-    jacobiSum 1 χ = -1 := by
+theorem jacobiSum_triv_nontriv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum 1 χ = -1 := by
   rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ, MulChar.sum_one_eq_card_units,
     Fintype.card_eq_card_units_add_one (α := F), add_zero, Nat.cast_add, Nat.cast_one,
     ← sub_sub, sub_self, zero_sub, add_right_eq_self]
@@ -162,7 +161,7 @@ theorem jacobiSum_inv {χ : MulChar F R} (hχ : χ ≠ 1) : jacobiSum χ χ⁻¹
   exact MulChar.sum_eq_zero_of_ne_one hχ
 
 /-- If `χ` and `ψ` are multiplicative characters on a finite field `F` such that
-`χψ` is nontrivial, then `g(χ) * J(χ,ψ) = g(χ) * g(ψ)`. -/
+`χψ` is nontrivial, then `g(χψ) * J(χ,ψ) = g(χ) * g(ψ)`. -/
 theorem jacobiSum_nontriv_nontriv {χ φ : MulChar F R} (h : χ * φ ≠ 1) (ψ : AddChar F R) :
     gaussSum (χ * φ) ψ * jacobiSum χ φ = gaussSum χ ψ * gaussSum φ ψ := by
   rw [gaussSum_mul _ _ ψ, sum_eq_sum_diff_singleton_add (mem_univ (0 : F))]
@@ -255,7 +254,6 @@ lemma jacobiSum_mul_jacobiSum_inv (h : ringChar F' ≠ ringChar F) {χ φ : MulC
 end field_field
 
 section image
--- new section (without `[DecidableEq F]`)
 
 variable {F R : Type*} [Fintype F] [Field F] [CommRing R] [IsDomain R]
 

@@ -350,15 +350,13 @@ lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one {χ : MulChar F R} {ψ : AddChar
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ * gaussSum (χ ^ (orderOf χ - 1)) ψ = χ (-1) * Fintype.card F := by
   have h : χ ^ (orderOf χ - 1) = χ⁻¹ := by
-    apply_fun (χ * ·) using mul_right_injective χ
-    simp only [← pow_succ', Nat.sub_one_add_one_eq_of_pos χ.orderOf_pos, pow_orderOf_eq_one,
-      mul_inv_cancel]
-  rw [h]
+    refine (inv_eq_of_mul_eq_one_right ?_).symm
+    rw [← pow_succ', Nat.sub_one_add_one_eq_of_pos χ.orderOf_pos, pow_orderOf_eq_one]
   have H : gaussSum χ⁻¹ ψ = χ (-1) * gaussSum χ⁻¹ ψ⁻¹ := by
-    have hχi : χ (-1) = χ⁻¹ (-1 : Fˣ) := by
-      simp only [Units.val_neg, Units.val_one, inv_apply', inv_neg_one]
+    have hχi : χ (-1) = χ⁻¹ (-1) := by
+      rw [inv_apply', inv_neg_one]
     rw [AddChar.inv_mulShift, hχi, show (-1 : F) = (-1 : Fˣ) from rfl, gaussSum_mulShift]
-  rw [H, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ]
+  rw [h, H, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ]
 
 /-- If `χ` is a multiplicative character of order `n ≥ 2` on a finite field `F`,
 then `g(χ)^n = χ(-1) * #F * J(χ,χ) * J(χ,χ²) * ... * J(χ,χⁿ⁻²)`. -/

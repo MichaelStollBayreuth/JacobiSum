@@ -341,6 +341,7 @@ end image
 
 section GaussSum
 
+variable {F R : Type*} [Fintype F] [DecidableEq F] [Field F] [CommRing R] [IsDomain R]
 open MulChar FiniteField
 
 /-- If `χ` is a multiplicative character of order `n` on a finite field `F`,
@@ -408,6 +409,10 @@ end GaussSum
 ### Gauss and Jacobi sums of characters with values in ℂ
 -/
 
+section complex_valued
+
+variable {F : Type*} [Fintype F] [Field F]
+
 /--  The Gauss sum of a multiplicative character on a finite field `F` with values in `ℂ`
 has absolute value the square root of `#F`. -/
 lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F ℂ}
@@ -440,6 +445,7 @@ theorem jacobiSum_abs_eq_sqrt [DecidableEq F] {χ ψ : MulChar F ℂ} (hχ : χ 
   rw [gaussSum_abs_eq_sqrt hχ hφ, gaussSum_abs_eq_sqrt hψ hφ, gaussSum_abs_eq_sqrt hχψ hφ]
   simp only [Nat.cast_nonneg, Real.mul_self_sqrt, Real.div_sqrt]
 
+end complex_valued
 
 /-!
 ### A proof of Fermat's two-squares theorem via Jacobi sums

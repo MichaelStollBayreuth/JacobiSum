@@ -5,16 +5,17 @@ open Finset
 namespace JacobiSumCubic
 
 -- `R` is an integral domain with a primitive cube root of unity `ω`.
-variable {R : Type*} [CommRing R] [IsDomain R] {ω : R} (hω : IsPrimitiveRoot ω 3)
+variable {R : Type*} [CommRing R] [IsDomain R] {ω : R}
 
-lemma rel_of_IsPrimitiveRoot : ω ^ 2 + ω + 1 = 0 := by
+lemma rel_of_IsPrimitiveRoot (hω : IsPrimitiveRoot ω 3) : ω ^ 2 + ω + 1 = 0 := by
   rw [← hω.geom_sum_eq_zero (by omega)]
   simp only [sum_range_succ, range_one, sum_singleton, pow_zero, pow_one]
   abel
 
 /-- If `ω` is a primitive cube root of unity, then any element of `ℤ[ω] ⊆ R` has the form
 `a + b*ω` with integers `a` and `b`. -/
-lemma integral_repr {x : R} (hx : x ∈ Algebra.adjoin ℤ {ω}) : ∃ a b : ℤ, x = a + b * ω := by
+lemma integral_repr (hω : IsPrimitiveRoot ω 3) {x : R} (hx : x ∈ Algebra.adjoin ℤ {ω}) :
+    ∃ a b : ℤ, x = a + b * ω := by
   have : Polynomial.aeval ω (Polynomial.cyclotomic 3 ℤ) = 0 := by
     simp only [Polynomial.cyclotomic_three, map_add, map_pow, Polynomial.aeval_X, map_one,
       rel_of_IsPrimitiveRoot hω]

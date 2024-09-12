@@ -59,7 +59,7 @@ variable {F F' : Type*} [Fintype F] [DecidableEq F] [Field F] [Field F']
 
 /-- If `χ` and `φ` are multiplicative characters on a finite field `F` with values
 in another field and such that `χφ` is nontrivial, then `J(χ,φ) = g(χ) * g(φ) / g(χφ)`. -/
-theorem jacobiSum_nontriv_nontriv' (h : (Fintype.card F : F') ≠ 0)
+theorem jacobiSum_eq_gaussSum_mul_gaussSum_div_gaussSum (h : (Fintype.card F : F') ≠ 0)
     {χ φ : MulChar F F'} (hχφ : χ * φ ≠ 1) {ψ : AddChar F F'} (hψ : ψ.IsPrimitive) :
     jacobiSum χ φ = gaussSum χ ψ * gaussSum φ ψ / gaussSum (χ * φ) ψ := by
   rw [eq_div_iff <| gaussSum_ne_zero_of_nontrivial h hχφ hψ, mul_comm]
@@ -286,7 +286,7 @@ theorem jacobiSum_abs_eq_sqrt [DecidableEq F] {χ ψ : MulChar F ℂ} (hχ : χ 
   have h : (Fintype.card F : ℂ) ≠ 0 := by
     norm_cast
     simp only [Fintype.card_ne_zero, not_false_eq_true]
-  rw [jacobiSum_nontriv_nontriv' h hχψ hφ, map_div₀, map_mul]
+  rw [jacobiSum_eq_gaussSum_mul_gaussSum_div_gaussSum h hχψ hφ, map_div₀, map_mul]
   -- rewrite each absolute value of a gaussSum as `√#F`
   rw [gaussSum_abs_eq_sqrt hχ hφ, gaussSum_abs_eq_sqrt hψ hφ, gaussSum_abs_eq_sqrt hχψ hφ]
   simp only [Nat.cast_nonneg, Real.mul_self_sqrt, Real.div_sqrt]

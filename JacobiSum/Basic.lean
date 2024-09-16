@@ -81,6 +81,7 @@ lemma MulChar.apply_sub_one_mul_apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : 
   rw [Hz₁, Hz₂]
   ring
 
+/-
 /-- If `χ` is a multiplicative character of order `n` on a finite field `F` with values in
 an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
 then the Jacobi sum `J(χ,χ)` is in `ℤ[μ] ⊆ R`. -/
@@ -99,6 +100,17 @@ lemma jacobiSum_mem_algebraAdjoin_of_pow_eq {n : ℕ} (hn : n ≠ 0) {χ : MulCh
   simp_rw [jacobiSum, ← map_mul χ]
   apply Subalgebra.sum_mem
   exact fun _ _ ↦ MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _
+ -/
+
+/-- If `χ` and `φ` are multiplicative characters on a finite field `F` satisfying `χ^n = φ^n = 1`
+and with values in an integral domain `R`, and `μ` is a primitive `n`th root of unity in `R`,
+then the Jacobi sum `J(χ,φ)` is in `ℤ[μ] ⊆ R`. -/
+lemma jacobiSum_mem_algebraAdjoin_of_pow_eq_one {n : ℕ} (hn : n ≠ 0) {χ φ : MulChar F R}
+    (hχ : χ ^ n = 1) (hφ : φ ^ n = 1) {μ : R} (hμ : IsPrimitiveRoot μ n) :
+    jacobiSum χ φ ∈ Algebra.adjoin ℤ {μ} :=
+  Subalgebra.sum_mem _ fun _ _ ↦ Subalgebra.mul_mem _
+    (MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _)
+    (MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hφ hμ _)
 
 
 /-- If `χ` and `ψ` are multiplicative characters of order dividing `n` on a finite field `F`

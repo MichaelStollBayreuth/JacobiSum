@@ -52,7 +52,8 @@ lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F R} 
     {ω : R} (hω : IsPrimitiveRoot ω 3) :
     ∃ z ∈ Algebra.adjoin ℤ {ω}, jacobiSum χ χ = -1 + 3 * z := by
   have hχ' : χ ^ 3 = 1 := hχ ▸ pow_orderOf_eq_one χ
-  obtain ⟨z, hz, Hz⟩ := jacobiSum_eq_neg_one_add (by omega) hχ' hχ' hχ hω
+  obtain ⟨z, hz, Hz⟩ :=
+    jacobiSum_eq_neg_one_add (by omega) hχ' hχ' (hχ ▸ χ.orderOf_dvd_card_sub_one) hω
   have hω' : (ω - 1) ^ 2 = 3 * (-ω) := by
     linear_combination JacobiSumCubic.rel_of_IsPrimitiveRoot hω
   rw [hω', mul_comm, mul_assoc] at Hz

@@ -115,12 +115,11 @@ lemma jacobiSum_mem_algebraAdjoin_of_pow_eq_one {n : ℕ} (hn : n ≠ 0) {χ φ 
 
 /-- If `χ` and `ψ` are multiplicative characters of order dividing `n` on a finite field `F`
 with values in an integral domain `R` and `μ` is a primitive `n`th root of unity in `R`,
-then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`.
-(We assume that there exists a multiplicative character of exact order `n` on `F`.) -/
-lemma jacobiSum_eq_neg_one_add [DecidableEq F] {n : ℕ} (hn : 2 < n) {χ ψ ρ : MulChar F R} {μ : R}
-    (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hρ : orderOf ρ = n) (hμ : IsPrimitiveRoot μ n) :
+then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`. (We assume that `#F ≡ 1 mod n`.) -/
+lemma jacobiSum_eq_neg_one_add [DecidableEq F] {n : ℕ} (hn : 2 < n) {χ ψ : MulChar F R} {μ : R}
+    (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hn' : n ∣ Fintype.card F - 1) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by
-  obtain ⟨q, hq⟩ := hρ ▸ ρ.orderOf_dvd_card_sub_one
+  obtain ⟨q, hq⟩ := hn'
   obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.self_sub_one_pow_dvd_order hn
   rw [Nat.sub_eq_iff_eq_add NeZero.one_le] at hq
   by_cases hχ₀ : χ = 1 <;> by_cases hψ₀ : ψ = 1

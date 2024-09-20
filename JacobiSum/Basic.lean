@@ -112,7 +112,6 @@ lemma jacobiSum_mem_algebraAdjoin_of_pow_eq_one {n : ℕ} (hn : n ≠ 0) {χ φ 
     (MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hχ hμ _)
     (MulChar.apply_mem_algebraAdjoin_of_pow_eq_one hn hφ hμ _)
 
-
 /-- If `χ` and `ψ` are multiplicative characters of order dividing `n` on a finite field `F`
 with values in an integral domain `R` and `μ` is a primitive `n`th root of unity in `R`,
 then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`. (We assume that `#F ≡ 1 mod n`.) -/
@@ -133,9 +132,9 @@ lemma jacobiSum_eq_neg_one_add [DecidableEq F] {n : ℕ} (hn : 2 < n) {χ ψ : M
   · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
     rw [jacobiSum_comm, hψ₀, jacobiSum_one_nontrivial hχ₀, zero_mul, add_zero]
   · rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ₀, MulChar.sum_eq_zero_of_ne_one hψ₀, hq]
-    let Z x := Classical.choose <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
-    have Zdef x : Z x ∈ Algebra.adjoin ℤ {μ} ∧ (χ x - 1) * (ψ (1 - x) - 1) = Z x * (μ - 1) ^ 2 :=
-      Classical.choose_spec <| MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
+    have H x := MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
+    let Z x := Classical.choose <| H x
+    have Zdef x := Classical.choose_spec <| H x
     refine ⟨-q * z₁ + ∑ x ∈ univ \ {0, 1}, Z x, ?_, ?_⟩
     · refine Subalgebra.add_mem _ (Subalgebra.mul_mem _ (Subalgebra.neg_mem _ ?_) hz₁) ?_
       · exact Subalgebra.natCast_mem ..

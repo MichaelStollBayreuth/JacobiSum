@@ -76,17 +76,19 @@ lemma MulChar.apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ : MulChar F R} {μ : R}
   refine hk ▸ ⟨(Finset.range k).sum (μ ^ ·), ?_, (geom_sum_mul μ k).symm⟩
   exact Subalgebra.sum_mem _ fun m _ ↦ Subalgebra.pow_mem _ (self_mem_adjoin_singleton _ μ) _
 
+-- count_heartbeats in -- 4373
 private
 lemma MulChar.apply_sub_one_mul_apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : MulChar F R} {μ : R}
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hμ : IsPrimitiveRoot μ n) (x : F) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, (χ x - 1) * (ψ (1 - x) - 1) = z * (μ - 1) ^ 2 := by
   rcases eq_or_ne x 0 with rfl | hx₀
-  · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, map_one, sub_self, mul_zero, zero_mul]⟩
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, ψ.map_one, sub_self, mul_zero, zero_mul]⟩
   rcases eq_or_ne x 1 with rfl | hx₁
-  · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
+  · exact ⟨0, Subalgebra.zero_mem _, by rw [χ.map_one, sub_self, zero_mul, zero_mul]⟩
   obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.apply_sub_one hn hχ hμ hx₀
   obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.apply_sub_one hn hψ hμ (sub_ne_zero_of_ne hx₁.symm)
-  exact ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, Hz₁ ▸ Hz₂ ▸ by ring⟩
+  rewrite [Hz₁, Hz₂, sq]
+  exact ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, mul_mul_mul_comm ..⟩
 
 /-- If `χ` and `ψ` are multiplicative characters of order dividing `n` on a finite field `F`
 with values in an integral domain `R` and `μ` is a primitive `n`th root of unity in `R`,

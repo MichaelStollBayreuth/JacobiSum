@@ -123,6 +123,12 @@ end image
 
 section GaussSum
 
+lemma gaussSum_eq_mul_gaussSum_inv {F R : Type*} [Fintype F] [CommRing F] [CommRing R]
+    {χ : MulChar F R} {ψ : AddChar F R} :
+    χ (-1) * gaussSum χ ψ⁻¹ = gaussSum χ ψ := by
+  rw [ψ.inv_mulShift, ← Units.coe_neg_one]
+  exact gaussSum_mulShift χ ψ (-1)
+
 variable {F R : Type*} [Fintype F] [Field F] [CommRing R] [IsDomain R]
 
 open MulChar FiniteField

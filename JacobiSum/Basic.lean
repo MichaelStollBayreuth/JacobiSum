@@ -74,12 +74,9 @@ lemma MulChar.apply_sub_one_mul_apply_sub_one {n : ℕ} (hn : n ≠ 0) {χ ψ : 
   · exact ⟨0, Subalgebra.zero_mem _, by rw [sub_zero, map_one, sub_self, mul_zero, zero_mul]⟩
   rcases eq_or_ne x 1 with rfl | hx₁
   · exact ⟨0, Subalgebra.zero_mem _, by rw [map_one, sub_self, zero_mul, zero_mul]⟩
-  rw [ne_comm, ← sub_ne_zero] at hx₁
   obtain ⟨z₁, hz₁, Hz₁⟩ := MulChar.apply_sub_one hn hχ hμ hx₀
-  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.apply_sub_one hn hψ hμ hx₁
-  refine ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, ?_⟩
-  rw [Hz₁, Hz₂]
-  ring
+  obtain ⟨z₂, hz₂, Hz₂⟩ := MulChar.apply_sub_one hn hψ hμ (sub_ne_zero_of_ne hx₁.symm)
+  exact ⟨z₁ * z₂, Subalgebra.mul_mem _ hz₁ hz₂, Hz₁ ▸ Hz₂ ▸ by ring⟩
 
 /-
 /-- If `χ` is a multiplicative character of order `n` on a finite field `F` with values in
@@ -114,7 +111,8 @@ lemma jacobiSum_mem_algebraAdjoin_of_pow_eq_one {n : ℕ} (hn : n ≠ 0) {χ φ 
 
 /-- If `χ` and `ψ` are multiplicative characters of order dividing `n` on a finite field `F`
 with values in an integral domain `R` and `μ` is a primitive `n`th root of unity in `R`,
-then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`. (We assume that `#F ≡ 1 mod n`.) -/
+then `J(χ,ψ) = -1 + z*(μ - 1)^2` for some `z ∈ ℤ[μ] ⊆ R`. (We assume that `#F ≡ 1 mod n`.)
+Note that we do not state this as a divisbility in `R`, as this would give a weaker statement. -/
 lemma jacobiSum_eq_neg_one_add [DecidableEq F] {n : ℕ} (hn : 2 < n) {χ ψ : MulChar F R} {μ : R}
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hn' : n ∣ Fintype.card F - 1) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by

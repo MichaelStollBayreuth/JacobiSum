@@ -98,30 +98,26 @@ lemma jacobiSum_eq_neg_one_add [DecidableEq F] {n : ℕ} (hn : 2 < n) {χ ψ : M
     (hχ : χ ^ n = 1) (hψ : ψ ^ n = 1) (hn' : n ∣ Fintype.card F - 1) (hμ : IsPrimitiveRoot μ n) :
     ∃ z ∈ Algebra.adjoin ℤ {μ}, jacobiSum χ ψ = -1 + z * (μ - 1) ^ 2 := by
   obtain ⟨q, hq⟩ := hn'
-  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.self_sub_one_pow_dvd_order hn
   rw [Nat.sub_eq_iff_eq_add NeZero.one_le] at hq
+  obtain ⟨z₁, hz₁, Hz₁⟩ := hμ.self_sub_one_pow_dvd_order hn
   by_cases hχ₀ : χ = 1 <;> by_cases hψ₀ : ψ = 1
   · rw [hχ₀, hψ₀, jacobiSum_one_one]
     refine ⟨q * z₁, Subalgebra.mul_mem _ (Subalgebra.natCast_mem _ q) hz₁, ?_⟩
-    rw [hq, mul_assoc, ← Hz₁]
-    push_cast
+    rw [hq, Nat.cast_add, Nat.cast_mul, Hz₁]
     ring
   · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
     rw [hχ₀, jacobiSum_one_nontrivial hψ₀, zero_mul, add_zero]
   · refine ⟨0, Subalgebra.zero_mem _, ?_⟩
     rw [jacobiSum_comm, hψ₀, jacobiSum_one_nontrivial hχ₀, zero_mul, add_zero]
   · rw [jacobiSum_eq_aux, MulChar.sum_eq_zero_of_ne_one hχ₀, MulChar.sum_eq_zero_of_ne_one hψ₀, hq]
-    have H x := MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ x
-    let Z x := Classical.choose <| H x
-    have Zdef x := Classical.choose_spec <| H x
-    refine ⟨-q * z₁ + ∑ x ∈ univ \ {0, 1}, Z x, ?_, ?_⟩
+    have H := MulChar.apply_sub_one_mul_apply_sub_one (by omega) hχ hψ hμ
+    have Hcs x := (H x).choose_spec
+    refine ⟨-q * z₁ + ∑ x ∈ (univ \ {0, 1} : Finset F), (H x).choose, ?_, ?_⟩
     · refine Subalgebra.add_mem _ (Subalgebra.mul_mem _ (Subalgebra.neg_mem _ ?_) hz₁) ?_
       · exact Subalgebra.natCast_mem ..
-      · exact Subalgebra.sum_mem _ fun x _ ↦ (Zdef x).1
-    · push_cast
-      rw [Hz₁, zero_add, zero_sub]
-      conv => enter [1, 2, 2, x]; rw [(Zdef x).2]
-      rw [← Finset.sum_mul]
+      · exact Subalgebra.sum_mem _ fun x _ ↦ (Hcs x).1
+    · conv => enter [1, 2, 2, x]; rw [(Hcs x).2]
+      rw [← Finset.sum_mul, Nat.cast_add, Nat.cast_mul, Hz₁]
       ring
 
 end image

@@ -124,7 +124,7 @@ end image
 section GaussSum
 
 lemma gaussSum_eq_mul_gaussSum_inv {F R : Type*} [Fintype F] [CommRing F] [CommRing R]
-    {χ : MulChar F R} {ψ : AddChar F R} :
+    (χ : MulChar F R) (ψ : AddChar F R) :
     χ (-1) * gaussSum χ ψ⁻¹ = gaussSum χ ψ := by
   rw [ψ.inv_mulShift, ← Units.coe_neg_one]
   exact gaussSum_mulShift χ ψ (-1)
@@ -141,11 +141,8 @@ lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one {χ : MulChar F R} {ψ : AddChar
   have h : χ ^ (orderOf χ - 1) = χ⁻¹ := by
     refine (inv_eq_of_mul_eq_one_right ?_).symm
     rw [← pow_succ', Nat.sub_one_add_one_eq_of_pos χ.orderOf_pos, pow_orderOf_eq_one]
-  have H : gaussSum χ⁻¹ ψ = χ (-1) * gaussSum χ⁻¹ ψ⁻¹ := by
-    have hχi : χ (-1) = χ⁻¹ (-1) := by
-      rw [inv_apply', inv_neg_one]
-    rw [AddChar.inv_mulShift, hχi, show (-1 : F) = (-1 : Fˣ) from rfl, gaussSum_mulShift]
-  rw [h, H, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ]
+  rw [h, ← gaussSum_eq_mul_gaussSum_inv χ⁻¹, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ,
+    inv_apply', inv_neg_one]
 
 /-- If `χ` is a multiplicative character of order `n ≥ 2` on a finite field `F`,
 then `g(χ)^n = χ(-1) * #F * J(χ,χ) * J(χ,χ²) * ... * J(χ,χⁿ⁻²)`. -/

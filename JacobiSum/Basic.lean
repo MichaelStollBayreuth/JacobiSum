@@ -162,14 +162,12 @@ theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : 
         specialize ih <| lt_trans (Nat.lt_succ_self i) i_lt_n
         have gauss_rw : gaussSum (χ ^ i) ψ * gaussSum χ ψ =
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
-          have chi_pow_i : χ * (χ ^ i) ≠ 1 :=
+          have hχi : χ * (χ ^ i) ≠ 1 :=
             pow_succ' χ i ▸ pow_ne_one_of_lt_orderOf i.add_one_ne_zero i_lt_n
-          rw [mul_comm, ← jacobiSum_mul_nontrivial chi_pow_i, mul_comm, ← pow_succ']
+          rw [mul_comm, ← jacobiSum_mul_nontrivial hχi, mul_comm, ← pow_succ']
         apply_fun (· * gaussSum χ ψ) at ih
-        rw [mul_assoc, mul_comm (Finset.prod ..) (gaussSum χ ψ), ← pow_succ, ← mul_assoc,
-          gauss_rw, mul_comm (jacobiSum ..)] at ih
-        rw [ih, mul_assoc, Finset.mul_prod_Ico_eq_prod_Icc (f := fun i ↦ jacobiSum χ (χ ^ i)) hi]
-        rfl
+        rw [mul_right_comm, ← pow_succ, gauss_rw] at ih
+        rw [ih, Finset.prod_Ico_succ_top hi, mul_rotate, mul_assoc]
   -- get equality for `i = n-1`
   have gauss_pow_n_sub := pow_gauss' (n - 1) (by simp only [mem_Ico]; omega)
   apply_fun (gaussSum χ ψ * .) at gauss_pow_n_sub

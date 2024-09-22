@@ -40,7 +40,7 @@ theorem gaussSum_pow_three {χ : MulChar F R} (hχ : orderOf χ = 3) {ψ : AddCh
     (hψ : ψ.IsPrimitive) :
     (gaussSum χ ψ) ^ 3 = Fintype.card F * jacobiSum χ χ := by
   simpa only [hχ, val_neg_one_eq_one_of_odd_order ⟨1, rfl⟩ (hχ ▸ pow_orderOf_eq_one χ), one_mul,
-    Nat.succ_sub_succ_eq_sub, tsub_zero, Icc_self, prod_singleton, pow_one]
+    Nat.succ_sub_succ_eq_sub, tsub_zero, Nat.Ico_succ_singleton, prod_singleton, pow_one]
     using gaussSum_pow_eq_prod_jacobiSum (by omega : 2 ≤ orderOf χ) hψ
 
 variable {R : Type*} [CommRing R] [IsDomain R]

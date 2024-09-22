@@ -149,29 +149,26 @@ then `g(χ)^n = χ(-1) * #F * J(χ,χ) * J(χ,χ²) * ... * J(χ,χⁿ⁻²)`. -
 theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : AddChar F R}
     (hχ : 2 ≤ orderOf χ) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ ^ orderOf χ =
-      χ (-1) * Fintype.card F * ∏ i ∈ Icc 1 (orderOf χ - 2), jacobiSum χ (χ ^ i) := by
+      χ (-1) * Fintype.card F * ∏ i ∈ Ico 1 (orderOf χ - 1), jacobiSum χ (χ ^ i) := by
   -- show `g(χ)^i = g(χ^i) * J(χ,χ)*...*J(χ,χ^(i-1))` for `1 ≤ i < n` by induction
   let n := orderOf χ
   have pow_gauss' : ∀ i ∈ Ico 1 n, (gaussSum χ ψ) ^ i =
       gaussSum (χ ^ i) ψ * ∏ j ∈ Ico 1 i, jacobiSum χ (χ ^ j) := by
     intro i hi
-    rw [mem_Ico] at hi
-    obtain ⟨one_le_i, i_lt_n⟩ := hi
+    obtain ⟨one_le_i, i_lt_n⟩ := mem_Ico.mp hi; clear hi -- otherwise error below
     induction i, one_le_i using Nat.le_induction with
-    | base =>
-        simp only [pow_one, le_refl, Ico_eq_empty_of_le, prod_empty, mul_one]
+    | base => simp only [pow_one, le_refl, Ico_eq_empty_of_le, prod_empty, mul_one]
     | succ i hi ih =>
         specialize ih <| lt_trans (Nat.lt_succ_self i) i_lt_n
         have gauss_rw : gaussSum (χ ^ i) ψ * gaussSum χ ψ =
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
-          have chi_pow_i : χ * (χ ^ i) ≠ 1 := by
-            rw [← pow_succ']
-            exact pow_ne_one_of_lt_orderOf (by omega) (by omega)
+          have chi_pow_i : χ * (χ ^ i) ≠ 1 :=
+            pow_succ' χ i ▸ pow_ne_one_of_lt_orderOf i.add_one_ne_zero i_lt_n
           rw [mul_comm, ← jacobiSum_mul_nontrivial chi_pow_i, mul_comm, ← pow_succ']
         apply_fun (· * gaussSum χ ψ) at ih
         rw [mul_assoc, mul_comm (Finset.prod ..) (gaussSum χ ψ), ← pow_succ, ← mul_assoc,
           gauss_rw, mul_comm (jacobiSum ..)] at ih
-        rw [ih, mul_assoc, Finset.mul_prod_Ico_eq_prod_Icc (f := fun i : ℕ ↦ jacobiSum χ (χ ^ i)) hi]
+        rw [ih, mul_assoc, Finset.mul_prod_Ico_eq_prod_Icc (f := fun i ↦ jacobiSum χ (χ ^ i)) hi]
         rfl
   -- get equality for `i = n-1`
   have gauss_pow_n_sub := pow_gauss' (n - 1) (by simp only [mem_Ico]; omega)
@@ -180,7 +177,6 @@ theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : 
   have hχ₁ : χ ≠ 1 :=
     fun h ↦ ((orderOf_one (G := MulChar F R) ▸ h ▸ hχ).trans_lt Nat.one_lt_two).false
   rw [gauss_pow_n_sub, ← mul_assoc, gaussSum_mul_gaussSum_pow_orderOf_sub_one hχ₁ hψ]
-  rfl
 
 end GaussSum
 

@@ -153,16 +153,14 @@ theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : 
   -- show `g(χ)^i = g(χ^i) * J(χ,χ)*...*J(χ,χ^(i-1))` for `1 ≤ i < n` by induction
   let n := orderOf χ
   have pow_gauss' : ∀ i ∈ Ico 1 n, (gaussSum χ ψ) ^ i =
-      gaussSum (χ ^ i) ψ * ∏ j ∈ Icc 1 (i - 1), jacobiSum χ (χ ^ j) := by
+      gaussSum (χ ^ i) ψ * ∏ j ∈ Ico 1 i, jacobiSum χ (χ ^ j) := by
     intro i hi
     rw [mem_Ico] at hi
     obtain ⟨one_le_i, i_lt_n⟩ := hi
     induction i, one_le_i using Nat.le_induction with
     | base =>
-        simp only [pow_one, le_refl, tsub_eq_zero_of_le, zero_lt_one, Icc_eq_empty_of_lt,
-          prod_empty, mul_one]
+        simp only [pow_one, le_refl, Ico_eq_empty_of_le, prod_empty, mul_one]
     | succ i hi ih =>
-        simp only [add_tsub_cancel_right]
         specialize ih <| lt_trans (Nat.lt_succ_self i) i_lt_n
         have gauss_rw : gaussSum (χ ^ i) ψ * gaussSum χ ψ =
             jacobiSum χ (χ ^ i) * gaussSum (χ ^ (i + 1)) ψ := by
@@ -173,19 +171,16 @@ theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : 
         apply_fun (· * gaussSum χ ψ) at ih
         rw [mul_assoc, mul_comm (Finset.prod ..) (gaussSum χ ψ), ← pow_succ, ← mul_assoc,
           gauss_rw, mul_comm (jacobiSum ..)] at ih
-        rw [ih, mul_assoc, ← Finset.mul_prod_Ico_eq_prod_Icc (b := i)]
-        congr
-        exact hi
+        rw [ih, mul_assoc, Finset.mul_prod_Ico_eq_prod_Icc (f := fun i : ℕ ↦ jacobiSum χ (χ ^ i)) hi]
+        rfl
   -- get equality for `i = n-1`
   have gauss_pow_n_sub := pow_gauss' (n - 1) (by simp only [mem_Ico]; omega)
-  have hχ₁ : χ ≠ 1 := by
-    convert pow_ne_one_of_lt_orderOf (x := χ) one_ne_zero (by omega)
-    exact (pow_one χ).symm
-  -- multiply again with `g(χ)`
-  apply_fun (· * gaussSum χ ψ) at gauss_pow_n_sub
-  rw [← pow_succ, Nat.sub_one_add_one_eq_of_pos (by omega), mul_right_comm, mul_comm (gaussSum ..),
-    gaussSum_mul_gaussSum_pow_orderOf_sub_one hχ₁ hψ] at gauss_pow_n_sub
-  convert gauss_pow_n_sub using 1
+  apply_fun (gaussSum χ ψ * .) at gauss_pow_n_sub
+  rw [← pow_succ', Nat.sub_one_add_one_eq_of_pos (by omega)] at gauss_pow_n_sub
+  have hχ₁ : χ ≠ 1 :=
+    fun h ↦ ((orderOf_one (G := MulChar F R) ▸ h ▸ hχ).trans_lt Nat.one_lt_two).false
+  rw [gauss_pow_n_sub, ← mul_assoc, gaussSum_mul_gaussSum_pow_orderOf_sub_one hχ₁ hψ]
+  rfl
 
 end GaussSum
 

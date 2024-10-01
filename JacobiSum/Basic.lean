@@ -55,19 +55,18 @@ end FiniteField
 
 section GaussSum
 
-lemma gaussSum_eq_mul_gaussSum_inv {F R : Type*} [Fintype F] [CommRing F] [CommRing R]
-    (χ : MulChar F R) (ψ : AddChar F R) :
+variable {F R : Type*} [Fintype F] [Field F] [CommRing R]
+
+lemma gaussSum_eq_mul_gaussSum_inv (χ : MulChar F R) (ψ : AddChar F R) :
     χ (-1) * gaussSum χ ψ⁻¹ = gaussSum χ ψ := by
   rw [ψ.inv_mulShift, ← Units.coe_neg_one]
   exact gaussSum_mulShift χ ψ (-1)
-
-variable {F R : Type*} [Fintype F] [Field F] [CommRing R] [IsDomain R]
 
 open MulChar FiniteField
 
 /-- If `χ` is a multiplicative character of order `n` on a finite field `F`,
 then `g(χ) * g(χ^(n-1)) = χ(-1)*#F` -/
-lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one {χ : MulChar F R} {ψ : AddChar F R}
+lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one [IsDomain R] {χ : MulChar F R} {ψ : AddChar F R}
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ * gaussSum (χ ^ (orderOf χ - 1)) ψ = χ (-1) * Fintype.card F := by
   have h : χ ^ (orderOf χ - 1) = χ⁻¹ := by
@@ -78,7 +77,7 @@ lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one {χ : MulChar F R} {ψ : AddChar
 
 /-- If `χ` is a multiplicative character of order `n ≥ 2` on a finite field `F`,
 then `g(χ)^n = χ(-1) * #F * J(χ,χ) * J(χ,χ²) * ... * J(χ,χⁿ⁻²)`. -/
-theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] {χ : MulChar F R} {ψ : AddChar F R}
+theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] [IsDomain R] {χ : MulChar F R} {ψ : AddChar F R}
     (hχ : 2 ≤ orderOf χ) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ ^ orderOf χ =
       χ (-1) * Fintype.card F * ∏ i ∈ Ico 1 (orderOf χ - 1), jacobiSum χ (χ ^ i) := by

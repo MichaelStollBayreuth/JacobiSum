@@ -133,38 +133,35 @@ end complex_valued
 /-!
 ### A proof of Fermat's two-squares theorem via Jacobi sums
 -/
-
+-- count_heartbeats in -- 4693
 open MulChar in
 /-- An alternative proof of the sum-of-two-squares-theorem using Jacobi sums. -/
 theorem Nat.prime_sq_add_sq' {p : ℕ} [hp : Fact p.Prime] (hp : p % 4 = 1) :
     ∃ a b : ℤ, p = a ^ 2 + b ^ 2 := by
   -- character `χ` of order 4 with values in `ℤ[i]`
   have hp' : 4 ∣ Fintype.card (ZMod p) - 1 := by
-    rw [ZMod.card]
-    exact hp ▸ Nat.dvd_sub_mod p
+    rw [ZMod.card p, ← hp]
+    exact Nat.dvd_sub_mod p
   have hI : IsPrimitiveRoot (⟨0, 1⟩ : GaussianInt) 4 := by
-    convert ← IsPrimitiveRoot.orderOf ?_
-    rw [orderOf_eq_iff (by norm_num)]
-    exact ⟨rfl, by decide⟩
+    have : orderOf (⟨0, 1⟩ : GaussianInt) = 4 :=
+      (orderOf_eq_iff <| zero_lt_succ _).mpr ⟨rfl, by decide⟩
+    exact this ▸ IsPrimitiveRoot.orderOf _
   obtain ⟨χ, hχ⟩ := exists_mulChar_orderOf (ZMod p) hp' hI
   have h₁ : 1 < orderOf χ := by rw [hχ]; norm_num
   have h₂ : 2 < orderOf χ := by rw [hχ]; norm_num
-  have hχ₁ := pow_ne_one_of_lt_orderOf one_ne_zero h₁
-  rw [pow_one] at hχ₁
-  have hχ₂ := pow_ne_one_of_lt_orderOf two_ne_zero h₂
-  rw [pow_two] at hχ₂
-  let f : GaussianInt →+* ℂ := GaussianInt.toComplex
+  have hχ₁ := pow_one χ ▸ pow_ne_one_of_lt_orderOf one_ne_zero h₁
+  have hχ₂ := pow_two χ ▸ pow_ne_one_of_lt_orderOf two_ne_zero h₂
+  let f := GaussianInt.toComplex
   have hJ := jacobiSum_ringHomComp χ χ f
   have hχ₁' := (MulChar.ringHomComp_ne_one_iff GaussianInt.toComplex_injective).mpr hχ₁
   have hχ₂' : χ.ringHomComp f * χ.ringHomComp f ≠ 1 := by
-    convert (MulChar.ringHomComp_ne_one_iff GaussianInt.toComplex_injective).mpr hχ₂
-    ext1
-    simp only [Int.reduceNeg, coeToFun_mul, Pi.mul_apply, ringHomComp_apply, map_mul]
+    rw [← ringHomComp_mul]
+    exact (MulChar.ringHomComp_ne_one_iff GaussianInt.toComplex_injective).mpr hχ₂
   have := jacobiSum_abs_eq_sqrt hχ₁' hχ₁' hχ₂'
   rw [hJ] at this
   apply_fun (· ^ 2) at this
-  simp only [Int.reduceNeg, ZMod.card, cast_nonneg, Real.sq_sqrt, Complex.sq_abs] at this
+  simp only [Int.reduceNeg, Complex.sq_abs, ZMod.card, cast_nonneg, Real.sq_sqrt] at this
   rw [← GaussianInt.intCast_real_norm, Zsqrtd.norm] at this
   norm_cast at this
-  simp only [Int.reduceNeg, Int.reduceNegSucc, neg_mul, one_mul, sub_neg_eq_add, ← sq] at this
+  simp only [Int.reduceNeg, ← sq, Int.reduceNegSucc, neg_mul, one_mul, sub_neg_eq_add] at this
   exact ⟨_, _, this.symm⟩

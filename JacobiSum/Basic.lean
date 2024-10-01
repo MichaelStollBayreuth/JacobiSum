@@ -31,33 +31,12 @@ open BigOperators Finset
 ### Jacobi sums over finite fields
 -/
 
-section FiniteField
-
-variable {F R : Type*} [Field F] [Fintype F] [DecidableEq F] [CommRing R]
-
-private lemma jacobiSum_eq_aux (χ ψ : MulChar F R) :
-    jacobiSum χ ψ = ∑ x : F, χ x + ∑ x : F, ψ x - Fintype.card F +
-                      ∑ x ∈ univ \ {0, 1}, (χ x - 1) * (ψ (1 - x) - 1) := by
-  rw [jacobiSum]
-  conv =>
-    enter [1, 2, x]
-    rw [show ∀ x y : R, x * y = x + y - 1 + (x - 1) * (y - 1) by intros; ring]
-  rw [sum_add_distrib, sum_sub_distrib, sum_add_distrib]
-  conv => enter [1, 1, 1, 2, 2, x]; rw [← Equiv.subLeft_apply 1]
-  rw [(Equiv.subLeft 1).sum_comp ψ, Fintype.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one,
-    sum_sdiff_eq_sub (subset_univ _), ← sub_zero (_ - _ + _), add_sub_assoc]
-  congr
-  rw [sum_pair zero_ne_one, sub_zero, ψ.map_one, χ.map_one, sub_self, mul_zero, zero_mul, add_zero]
-
-end FiniteField
-
---
 
 section GaussSum
 
 variable {F R : Type*} [Fintype F] [Field F] [CommRing R]
 
-lemma gaussSum_eq_mul_gaussSum_inv (χ : MulChar F R) (ψ : AddChar F R) :
+lemma mul_gaussSum_inv_eq_gaussSum (χ : MulChar F R) (ψ : AddChar F R) :
     χ (-1) * gaussSum χ ψ⁻¹ = gaussSum χ ψ := by
   rw [ψ.inv_mulShift, ← Units.coe_neg_one]
   exact gaussSum_mulShift χ ψ (-1)
@@ -72,13 +51,13 @@ lemma gaussSum_mul_gaussSum_pow_orderOf_sub_one [IsDomain R] {χ : MulChar F R} 
   have h : χ ^ (orderOf χ - 1) = χ⁻¹ := by
     refine (inv_eq_of_mul_eq_one_right ?_).symm
     rw [← pow_succ', Nat.sub_one_add_one_eq_of_pos χ.orderOf_pos, pow_orderOf_eq_one]
-  rw [h, ← gaussSum_eq_mul_gaussSum_inv χ⁻¹, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ,
+  rw [h, ← mul_gaussSum_inv_eq_gaussSum χ⁻¹, mul_left_comm, gaussSum_mul_gaussSum_eq_card hχ hψ,
     inv_apply', inv_neg_one]
 
 /-- If `χ` is a multiplicative character of order `n ≥ 2` on a finite field `F`,
 then `g(χ)^n = χ(-1) * #F * J(χ,χ) * J(χ,χ²) * ... * J(χ,χⁿ⁻²)`. -/
-theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] [IsDomain R] {χ : MulChar F R} {ψ : AddChar F R}
-    (hχ : 2 ≤ orderOf χ) (hψ : ψ.IsPrimitive) :
+theorem gaussSum_pow_eq_prod_jacobiSum [DecidableEq F] [IsDomain R] {χ : MulChar F R}
+    {ψ : AddChar F R} (hχ : 2 ≤ orderOf χ) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ ^ orderOf χ =
       χ (-1) * Fintype.card F * ∏ i ∈ Ico 1 (orderOf χ - 1), jacobiSum χ (χ ^ i) := by
   -- show `g(χ)^i = g(χ^i) * J(χ,χ)*...*J(χ,χ^(i-1))` for `1 ≤ i < n` by induction

@@ -2,23 +2,25 @@ import JacobiSum.Basic
 
 open Finset
 
-namespace JacobiSumCubic
+namespace IsPrimitiveRoot
 
 -- `R` is an integral domain with a primitive cube root of unity `ω`.
 variable {R : Type*} [CommRing R] [IsDomain R] {ω : R}
 
-lemma rel_of_IsPrimitiveRoot (hω : IsPrimitiveRoot ω 3) : ω ^ 2 + ω + 1 = 0 := by
+lemma cubic_rel (hω : IsPrimitiveRoot ω 3) : ω ^ 2 + ω + 1 = 0 := by
   rw [← hω.geom_sum_eq_zero (by omega)]
   simp only [sum_range_succ, range_one, sum_singleton, pow_zero, pow_one]
   abel
 
+-- #find_home! cubic_rel --[Mathlib.RingTheory.RootsOfUnity.Basic]
+
 /-- If `ω` is a primitive cube root of unity, then any element of `ℤ[ω] ⊆ R` has the form
 `a + b*ω` with integers `a` and `b`. -/
-lemma integral_repr (hω : IsPrimitiveRoot ω 3) {x : R} (hx : x ∈ Algebra.adjoin ℤ {ω}) :
+lemma cubic_integral_repr (hω : IsPrimitiveRoot ω 3) {x : R} (hx : x ∈ Algebra.adjoin ℤ {ω}) :
     ∃ a b : ℤ, x = a + b * ω := by
   have : Polynomial.aeval ω (Polynomial.cyclotomic 3 ℤ) = 0 := by
     simp only [Polynomial.cyclotomic_three, map_add, map_pow, Polynomial.aeval_X, map_one,
-      rel_of_IsPrimitiveRoot hω]
+      hω.cubic_rel]
   change x ∈ Subalgebra.toSubmodule (Algebra.adjoin ℤ {ω}) at hx
   rw [← Submodule.span_range_natDegree_eq_adjoin (Polynomial.cyclotomic.monic 3 ℤ) this,
     Polynomial.natDegree_cyclotomic, show range (Nat.totient 3) = {0, 1} from rfl] at hx
@@ -26,7 +28,7 @@ lemma integral_repr (hω : IsPrimitiveRoot ω 3) {x : R} (hx : x ∈ Algebra.adj
   obtain ⟨a, b, hx⟩ := Submodule.mem_span_pair.1 hx
   exact ⟨a, b, hx ▸ by simp only [zsmul_eq_mul, mul_one]⟩
 
-end JacobiSumCubic
+end IsPrimitiveRoot
 
 
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
@@ -55,7 +57,7 @@ lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F R} 
   obtain ⟨z, hz, Hz⟩ :=
     exists_jacobiSum_eq_neg_one_add (by omega) hχ' hχ' (hχ ▸ χ.orderOf_dvd_card_sub_one) hω
   have hω' : (ω - 1) ^ 2 = 3 * (-ω) := by
-    linear_combination JacobiSumCubic.rel_of_IsPrimitiveRoot hω
+    linear_combination hω.cubic_rel
   rw [hω', mul_comm, mul_assoc] at Hz
   refine ⟨-ω * z, ?_, Hz⟩
   exact Subalgebra.mul_mem _ (Subalgebra.neg_mem _ <| Algebra.self_mem_adjoin_singleton ℤ ω) hz
@@ -67,6 +69,6 @@ lemma jacobiSum_eq_neg_one_add_three_mul_add_of_orderOf_eq_three {χ : MulChar F
     (hχ : orderOf χ = 3) {ω : R} (hω : IsPrimitiveRoot ω 3) :
     ∃ a b : ℤ, jacobiSum χ χ = -1 + 3 * a + 3 * b * ω := by
   obtain ⟨z, hz, Hz⟩ := jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three hχ hω
-  obtain ⟨a, b, hab⟩ := JacobiSumCubic.integral_repr hω hz
+  obtain ⟨a, b, hab⟩ := hω.cubic_integral_repr hz
   rw [hab, mul_add, ← add_assoc, ← mul_assoc] at Hz
   exact ⟨a, b, Hz⟩

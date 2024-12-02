@@ -31,7 +31,7 @@ lemma cubic_integral_repr (hω : IsPrimitiveRoot ω 3) {x : R} (hx : x ∈ Algeb
 end IsPrimitiveRoot
 
 
-variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
+variable {F : Type*} [Field F] [Fintype F]
 
 open MulChar BigOperators
 

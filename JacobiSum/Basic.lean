@@ -37,9 +37,9 @@ variable {F : Type*} [Fintype F] [Field F]
 
 /--  The Gauss sum of a multiplicative character on a finite field `F` with values in `ℂ`
 has absolute value the square root of `#F`. -/
-lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F ℂ}
+lemma gaussSum_norm_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F ℂ}
     (hφ : φ.IsPrimitive) :
-    Complex.abs (gaussSum χ φ) = Real.sqrt (Fintype.card F) := by
+    ‖gaussSum χ φ‖ = Real.sqrt (Fintype.card F) := by
   have hF : 0 < ringChar F := Nat.pos_of_ne_zero <| CharP.ringChar_ne_zero_of_finite F
   have gauss_inv : gaussSum χ⁻¹ φ⁻¹ = star (gaussSum χ φ) := by
     rw [← χ.star_eq_inv, gaussSum, gaussSum]
@@ -53,18 +53,18 @@ lemma gaussSum_abs_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F
 
 /-- If `χ`, `ψ` and `χψ` are all nontrivial multiplicative characters on a finite field `F`
 with values in `ℂ`, then `|J(χ,ψ)| = √#F`. -/
-theorem jacobiSum_abs_eq_sqrt [DecidableEq F] {χ ψ : MulChar F ℂ} (hχ : χ ≠ 1) (hψ : ψ ≠ 1)
+theorem jacobiSum_norm_eq_sqrt [DecidableEq F] {χ ψ : MulChar F ℂ} (hχ : χ ≠ 1) (hψ : ψ ≠ 1)
     (hχψ : χ * ψ ≠ 1) :
-    Complex.abs (jacobiSum χ ψ) = Real.sqrt (Fintype.card F) := by
+    ‖jacobiSum χ ψ‖ = Real.sqrt (Fintype.card F) := by
   -- rewrite jacobiSum as gaussSums
   let φ := AddChar.FiniteField.primitiveChar_to_Complex F
   have hφ : φ.IsPrimitive := AddChar.FiniteField.primitiveChar_to_Complex_isPrimitive F
   have h : (Fintype.card F : ℂ) ≠ 0 := by
     norm_cast
     simp only [Fintype.card_ne_zero, not_false_eq_true]
-  rw [jacobiSum_eq_gaussSum_mul_gaussSum_div_gaussSum h hχψ hφ, map_div₀, map_mul]
+  rw [jacobiSum_eq_gaussSum_mul_gaussSum_div_gaussSum h hχψ hφ, norm_div, norm_mul]
   -- rewrite each absolute value of a gaussSum as `√#F`
-  rw [gaussSum_abs_eq_sqrt hχ hφ, gaussSum_abs_eq_sqrt hψ hφ, gaussSum_abs_eq_sqrt hχψ hφ]
+  rw [gaussSum_norm_eq_sqrt hχ hφ, gaussSum_norm_eq_sqrt hψ hφ, gaussSum_norm_eq_sqrt hχψ hφ]
   simp only [Nat.cast_nonneg, Real.mul_self_sqrt, Real.div_sqrt]
 
 end complex_valued
@@ -96,10 +96,10 @@ theorem Nat.prime_sq_add_sq' {p : ℕ} [hp : Fact p.Prime] (hp : p % 4 = 1) :
   have hχ₂' : χ.ringHomComp f * χ.ringHomComp f ≠ 1 := by
     rw [← ringHomComp_mul]
     exact (MulChar.ringHomComp_ne_one_iff GaussianInt.toComplex_injective).mpr hχ₂
-  have := jacobiSum_abs_eq_sqrt hχ₁' hχ₁' hχ₂'
+  have := jacobiSum_norm_eq_sqrt hχ₁' hχ₁' hχ₂'
   rw [hJ] at this
   apply_fun (· ^ 2) at this
-  simp only [Int.reduceNeg, Complex.sq_abs, ZMod.card, cast_nonneg, Real.sq_sqrt] at this
+  simp only [Int.reduceNeg, Complex.sq_norm, ZMod.card, cast_nonneg, Real.sq_sqrt] at this
   rw [← GaussianInt.intCast_real_norm, Zsqrtd.norm] at this
   norm_cast at this
   simp only [Int.reduceNeg, ← sq, Int.reduceNegSucc, neg_mul, one_mul, sub_neg_eq_add] at this

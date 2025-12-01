@@ -10,7 +10,7 @@ import Mathlib
 
 attribute [grind =] Finset.mem_Ico Finset.mem_Icc
 
-attribute [grind] abs -- not necessary in recent Mathlib
+-- attribute [grind] abs -- not necessary in recent Mathlib
 
 namespace ConditionalConvergence
 

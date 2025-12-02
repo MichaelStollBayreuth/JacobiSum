@@ -105,7 +105,7 @@ lemma i_const_of_not_pred {I : Interlace α} {m n : ℕ} (h : ∀ k ∈ Ico m n,
     rw [← ih (by grind) (by grind)]
     exact (I.Hj k (h k (by grind))).1
 
-/-- The `i` function is surjective if the predicate `P` holds frequently. -/
+/-- The `i` function is surjective if the predicate `I.pred` holds frequently. -/
 lemma surjective_i {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) :
     Function.Surjective I.i := by
   intro n
@@ -121,7 +121,7 @@ lemma surjective_i {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) :
       hm ▸ i_const_of_not_pred (n := N) (fun k hk ↦ H (by grind) (by grind)) N (by grind)
     exact H ▸ (I.Hi N (Nat.find_spec (freqP m)).2).1
 
-/-- The `j` function is surjective if the predicate `¬P` holds frequently. -/
+/-- The `j` function is surjective if the predicate `¬I.pred` holds frequently. -/
 lemma surjective_j {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
     Function.Surjective I.j :=
   surjective_i (I := I.mirror) freqnP
@@ -139,35 +139,31 @@ lemma surjective_j' {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m
     ∃ n, I.j n = j ∧ ¬ I.pred n :=
   surjective_i' (I := I.mirror) freqnP j
 
-/-- If `P` and `¬P` both hold frequently, then the interlacing `e` is bijective. -/
-lemma bijective_e {I : Interlace α}
-    (freqP : ∀ n, ∃ m ≥ n, I.pred m) (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
-    Function.Bijective I.e := by
-  have Hi := I.Hi
-  have Hj := I.Hj
-  refine ⟨fun m n h ↦ ?_, fun mn ↦ ?_⟩
-  · simp only [e] at h
-    by_cases hm : I.pred m <;> simp only [hm, ↓reduceIte] at h
-      <;> by_cases hn : I.pred n <;> simp only [hn, ↓reduceIte] at h
-        <;> refine le_antisymm ?_ ?_
-    all_goals
-      by_contra! H
-      have H₁ := mono_i I H
-      have H₂ := mono_j I H
-      grind
-  · cases mn with
-    | inl val =>
-      obtain ⟨n, hn₁, hn₂⟩ := surjective_i' freqP val
-      exact ⟨n, by grind⟩
-    | inr val =>
-      obtain ⟨n, hn₁, hn₂⟩ := surjective_j' freqnP val
-      exact ⟨n, by grind⟩
-
-/-- The equivalence `ℕ ≃ ℕ ⊕ ℕ` extracted from an `Interlace` structure. -/
+/-- The equivalence `ℕ ≃ ℕ ⊕ ℕ` extracted from an `Interlace` structure `I` when both `I.pred`
+and `¬I.pred` hold frequently. -/
 noncomputable def equiv (I : Interlace α)
     (freqP : ∀ n, ∃ m ≥ n, I.pred m) (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
     ℕ ≃ ℕ ⊕ ℕ :=
-  .ofBijective I.e <| I.bijective_e freqP freqnP
+  .ofBijective I.e <| by
+    have Hi := I.Hi -- for `grind`
+    have Hj := I.Hj
+    refine ⟨fun m n h ↦ ?_, fun mn ↦ ?_⟩
+    · simp only [e] at h
+      by_cases hm : I.pred m <;> simp only [hm, ↓reduceIte] at h
+        <;> by_cases hn : I.pred n <;> simp only [hn, ↓reduceIte] at h
+          <;> refine le_antisymm ?_ ?_
+      all_goals
+        by_contra! H
+        have H₁ := mono_i I H -- for `grind`
+        have H₂ := mono_j I H
+        grind
+    · cases mn with
+      | inl val =>
+        obtain ⟨n, hn₁, hn₂⟩ := surjective_i' freqP val
+        exact ⟨n, by grind⟩
+      | inr val =>
+        obtain ⟨n, hn₁, hn₂⟩ := surjective_j' freqnP val
+        exact ⟨n, by grind⟩
 
 end Interlace
 

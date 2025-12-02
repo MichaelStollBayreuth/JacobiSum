@@ -8,10 +8,6 @@ import Mathlib
 ### Auxiliary results
 -/
 
--- attribute [grind =] Finset.mem_Ico Finset.mem_Icc
-
--- attribute [grind] abs -- not necessary in recent Mathlib
-
 namespace ConditionalConvergence
 
 open Finset in
@@ -47,19 +43,19 @@ structure Interlace (α : Type*) where
   /-- An `α`-valued sequence -/
   s : ℕ → α
   /-- The first index function -/
-  i : α → ℕ
+  i : ℕ → ℕ
   /-- At zero, `i` is zero. -/
-  hi : i (s 0) = 0
+  hi : i 0 = 0
   /-- The second index function -/
-  j : α → ℕ
+  j : ℕ → ℕ
   /-- At zero, `j` is zero. -/
-  hj : j (s 0) = 0
+  hj : j 0 = 0
   /-- The predicate that decides which index to increment -/
   P : ℕ → α → Prop
   /-- If `P n (s n)` holds, then `i` is incremented. -/
-  Hi n : P n (s n) → i (s (n + 1)) = i (s n) + 1 ∧ j (s (n + 1)) = j (s n)
+  Hi n : P n (s n) → i (n + 1) = i n + 1 ∧ j (n + 1) = j n
   /-- If `P n (s n)` does not hold, then `j` is incremented. -/
-  Hj n : ¬P n (s n) → i (s (n + 1)) = i (s n) ∧ j (s (n + 1)) = j (s n) + 1
+  Hj n : ¬P n (s n) → i (n + 1) = i n ∧ j (n + 1) = j n + 1
 
 namespace Interlace
 
@@ -88,19 +84,19 @@ def mirror (I : Interlace α) : Interlace α where
 /-- The map `ℕ → ℕ ⊕ ℕ` defined by an `Interlace` structure. -/
 @[grind]
 noncomputable def e (I : Interlace α) (n : ℕ) : ℕ ⊕ ℕ :=
-  if I.pred n then .inl <| I.i (I.s n) else .inr <| I.j (I.s n)
+  if I.pred n then .inl <| I.i n else .inr <| I.j n
 
-lemma mono_i (I : Interlace α) : Monotone fun n ↦ I.i (I.s n) := by
+lemma mono_i (I : Interlace α) : Monotone fun n ↦ I.i n := by
   refine monotone_nat_of_le_succ fun n ↦ ?_
   have := I.Hi n
   have := I.Hj n
   by_cases I.pred n <;> grind
 
-lemma mono_j (I : Interlace α) : Monotone fun n ↦ I.j (I.s n) :=
+lemma mono_j (I : Interlace α) : Monotone fun n ↦ I.j n :=
   mono_i I.mirror
 
 lemma i_const_of_not_pred {I : Interlace α} {m n : ℕ} (h : ∀ k ∈ Ico m n, ¬ I.pred k) :
-    ∀ k ∈ Icc m n, I.i (I.s k) = I.i (I.s m) := by
+    ∀ k ∈ Icc m n, I.i k = I.i m := by
   intro k hk
   obtain ⟨hk₁, hk₂⟩ := mem_Ico.mp hk
   induction k, hk₁ using Nat.le_induction with
@@ -111,7 +107,7 @@ lemma i_const_of_not_pred {I : Interlace α} {m n : ℕ} (h : ∀ k ∈ Ico m n,
 
 /-- The `i` function is surjective if the predicate `P` holds frequently. -/
 lemma surjective_i {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) :
-    Function.Surjective fun n ↦ I.i (I.s n) := by
+    Function.Surjective I.i := by
   intro n
   induction n with
   | zero => exact ⟨0, I.hi⟩
@@ -121,17 +117,17 @@ lemma surjective_i {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) :
     push_neg at H
     set N := Nat.find (freqP m)
     use N + 1
-    replace H : I.i (I.s N) = n :=
+    replace H : I.i N = n :=
       hm ▸ i_const_of_not_pred (n := N) (fun k hk ↦ H (by grind) (by grind)) N (by grind)
     exact H ▸ (I.Hi N (Nat.find_spec (freqP m)).2).1
 
 /-- The `j` function is surjective if the predicate `¬P` holds frequently. -/
 lemma surjective_j {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
-    Function.Surjective fun n ↦ I.j (I.s n) :=
+    Function.Surjective I.j :=
   surjective_i (I := I.mirror) freqnP
 
 lemma surjective_i' {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) (i : ℕ) :
-    ∃ n, I.i (I.s n) = i ∧ I.pred n := by
+    ∃ n, I.i n = i ∧ I.pred n := by
   obtain ⟨n, hn⟩ := surjective_i freqP i
   have H := @Nat.find_min _ _ (freqP n)
   push_neg at H
@@ -140,7 +136,7 @@ lemma surjective_i' {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) (i
   exact hn ▸ i_const_of_not_pred (n := N) (fun k hk ↦ H (by grind) (by grind)) N (by grind)
 
 lemma surjective_j' {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) (j : ℕ) :
-    ∃ n, I.j (I.s n) = j ∧ ¬ I.pred n :=
+    ∃ n, I.j n = j ∧ ¬ I.pred n :=
   surjective_i' (I := I.mirror) freqnP j
 
 /-- If `P` and `¬P` both hold frequently, then the interlacing `e` is bijective. -/
@@ -252,54 +248,45 @@ structure state (a b : ℕ → ℝ) where
   /-- next index in the second sequece -/
   i₂ : ℕ
   /-- total signed sum -/
-  s : ℝ
+  sum : ℝ
 
 /-- Define a sequence of states according to the algorithm in the proof. -/
 @[grind, simp]
 noncomputable def seqState (a b : ℕ → ℝ) (L : ℝ) :
     ℕ → state a b
-  | 0 => { i₁ := 0, i₂ := 0, s := 0 }
+  | 0 => { i₁ := 0, i₂ := 0, sum := 0 }
   | n + 1 =>
       let st := seqState a b L n
       -- we take the next term from `a` if `s < L`, else from `-b`
-      if st.s < L then { i₁ := st.i₁ + 1, i₂ := st.i₂, s := st.s + a st.i₁ }
-                  else { i₁ := st.i₁, i₂ := st.i₂ + 1, s := st.s - b st.i₂ }
+      if st.sum < L then { i₁ := st.i₁ + 1, i₂ := st.i₂, sum := st.sum + a st.i₁ }
+                    else { i₁ := st.i₁, i₂ := st.i₂ + 1, sum := st.sum - b st.i₂ }
 
 namespace seqState
+
+/-- The sequence of `state`s used below. -/
+noncomputable abbrev ss (a b : ℕ → ℝ) (L : ℝ) : ℕ → state a b := seqState a b L
 
 /-- Translate this into an `Interlace` structure. -/
 @[grind]
 noncomputable def interlace (a b : ℕ → ℝ) (L : ℝ) : Interlace (state a b) where
-  s := seqState a b L
-  i := state.i₁
+  s := ss a b L
+  i n := (ss a b L n).i₁
   hi := by grind
-  j := state.i₂
+  j n := (ss a b L n).i₂
   hj := by grind
-  P n st := st.s < L
+  P n st := st.sum < L
   Hi n := by grind
   Hj n := by grind
 
-lemma interlace_s (a b : ℕ → ℝ) (L : ℝ) :
-    (interlace a b L).s = seqState a b L :=
-  rfl
-
-lemma interlace_i (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    (interlace a b L).i ((interlace a b L).s n) = (seqState a b L n).i₁ :=
-  rfl
-
-lemma interlace_j (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    (interlace a b L).j ((interlace a b L).s n) = (seqState a b L n).i₂ :=
-  rfl
-
 @[grind =]
 lemma interlace_pred (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    (interlace a b L).pred n ↔ (seqState a b L n).s < L := by
+    (interlace a b L).pred n ↔ (seqState a b L n).sum < L := by
   rfl
 
 lemma aux_i₁ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     letI st := seqState a b L
-    ∀ m ≥ n, (∀ k ∈ Ico n m, (st k).s < L) → (st m).i₁ = (st n).i₁ + (m - n) ∧
-      (st m).s = (st n).s + ∑ x ∈ range (m - n), a ((st n).i₁ + x) := by
+    ∀ m ≥ n, (∀ k ∈ Ico n m, (st k).sum < L) → (st m).i₁ = (st n).i₁ + (m - n) ∧
+      (st m).sum = (st n).sum + ∑ x ∈ range (m - n), a ((st n).i₁ + x) := by
   set st := seqState a b L
   intro m hm
   induction m, hm using Nat.le_induction with
@@ -310,14 +297,14 @@ lemma aux_i₁ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     obtain ⟨ih₁, ih₂⟩ := ih (fun k hk ↦ h k (by grind))
     have H : (st (m + 1)).i₁ = (st n).i₁ + (m + 1 - n) := by grind
     refine ⟨H, ?_⟩
-    have : (st (m + 1)).s = (st m).s + a (st m).i₁ := by grind
+    have : (st (m + 1)).sum = (st m).sum + a (st m).i₁ := by grind
     rw [this, ih₂, show m + 1 - n = m - n + 1 by grind, sum_range_succ, ih₁]
     ring
 
 lemma aux_i₂ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     letI st := seqState a b L
-    ∀ m ≥ n, (∀ k ∈ Ico n m, L ≤ (st k).s) → (st m).i₂ = (st n).i₂ + (m - n) ∧
-      (st m).s = (st n).s - ∑ k ∈ range (m - n), b ((st n).i₂ + k) := by
+    ∀ m ≥ n, (∀ k ∈ Ico n m, L ≤ (st k).sum) → (st m).i₂ = (st n).i₂ + (m - n) ∧
+      (st m).sum = (st n).sum - ∑ k ∈ range (m - n), b ((st n).i₂ + k) := by
   set st := seqState a b L
   intro m hm
   induction m, hm using Nat.le_induction with
@@ -328,17 +315,17 @@ lemma aux_i₂ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     obtain ⟨ih₁, ih₂⟩ := ih (fun k hk ↦ h k (by grind))
     have H : (st (m + 1)).i₂ = (st n).i₂ + (m + 1 - n) := by grind
     refine ⟨H, ?_⟩
-    have : (st (m + 1)).s = (st m).s - b (st m).i₂ := by grind
+    have : (st (m + 1)).sum = (st m).sum - b (st m).i₂ := by grind
     rw [this, ih₂, show m + 1 - n = m - n + 1 by grind, sum_range_succ, ih₁]
     ring
 
 lemma frequently_lt (a : ℕ → ℝ) {b : ℕ → ℝ} (hb : SeriesDivToInfty b) (L : ℝ) (n : ℕ) :
-    ∃ m ≥ n, (seqState a b L m).s < L := by
+    ∃ m ≥ n, (seqState a b L m).sum < L := by
   set st := seqState a b L
   by_contra! H
-  have h : ∀ m ≥ n, (st m).s = (st n).s - ∑ k ∈ range (m - n), b ((st n).i₂ + k) :=
+  have h : ∀ m ≥ n, (st m).sum = (st n).sum - ∑ k ∈ range (m - n), b ((st n).i₂ + k) :=
     fun m hm ↦ (aux_i₂ a b L n m hm (fun k hk ↦ by grind)).2
-  obtain ⟨N, hN₁, hN⟩ := TailDivToInfty hb (st n).i₂ ((st n).s - L)
+  obtain ⟨N, hN₁, hN⟩ := TailDivToInfty hb (st n).i₂ ((st n).sum - L)
   specialize h (N + n) (by grind)
   specialize hN ((st n).i₂ + N) (by grind)
   specialize H (N + n) (by grind)
@@ -346,12 +333,12 @@ lemma frequently_lt (a : ℕ → ℝ) {b : ℕ → ℝ} (hb : SeriesDivToInfty b
   grind
 
 lemma frequently_le {a : ℕ → ℝ} (ha : SeriesDivToInfty a) (b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    ∃ m ≥ n, L ≤ (seqState a b L m).s := by
+    ∃ m ≥ n, L ≤ (seqState a b L m).sum := by
   set st := seqState a b L
   by_contra! H
-  have h : ∀ m ≥ n, (st m).s = (st n).s + ∑ k ∈ range (m - n), a ((st n).i₁ + k) :=
+  have h : ∀ m ≥ n, (st m).sum = (st n).sum + ∑ k ∈ range (m - n), a ((st n).i₁ + k) :=
     fun m hm ↦ (aux_i₁ a b L n m hm (fun k hk ↦ by grind)).2
-  obtain ⟨N, hN₁, hN⟩ := TailDivToInfty ha (st n).i₁ (L - (st n).s)
+  obtain ⟨N, hN₁, hN⟩ := TailDivToInfty ha (st n).i₁ (L - (st n).sum)
   specialize h (N + n) (by grind)
   specialize hN ((st n).i₁ + N) (by grind)
   specialize H (N + n) (by grind)
@@ -359,16 +346,16 @@ lemma frequently_le {a : ℕ → ℝ} (ha : SeriesDivToInfty a) (b : ℕ → ℝ
   grind
 
 lemma frequently_le' {a : ℕ → ℝ} (ha : SeriesDivToInfty a) (b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    ∃ m ≥ n, ¬ (seqState a b L m).s < L := by
+    ∃ m ≥ n, ¬ (seqState a b L m).sum < L := by
   convert frequently_le ha b L n
   simp
 
 lemma frequently_lt_then_le {a b : ℕ → ℝ} (ha : SeriesDivToInfty a) (hb : SeriesDivToInfty b)
     (L : ℝ) (n : ℕ) :
-    ∃ m ≥ n, (seqState a b L m).s < L ∧ L ≤ (seqState a b L (m + 1)).s := by
+    ∃ m ≥ n, (seqState a b L m).sum < L ∧ L ≤ (seqState a b L (m + 1)).sum := by
   by_contra! H
   obtain ⟨m, hm₁, hm₂⟩ := frequently_lt a hb L n
-  have H₁ : ∀ k ≥ m, (seqState a b L k).s < L := by
+  have H₁ : ∀ k ≥ m, (seqState a b L k).sum < L := by
     intro k hk
     induction k, hk using Nat.le_induction with
     | base => exact hm₂
@@ -377,8 +364,8 @@ lemma frequently_lt_then_le {a b : ℕ → ℝ} (ha : SeriesDivToInfty a) (hb : 
   grind
 
 lemma seqLim_aux {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (L : ℝ) (n : ℕ) :
-    |(seqState a b L (n + 1)).s - L| ≤
-    max |(seqState a b L n).s - L| (max (a (seqState a b L n).i₁) (b (seqState a b L n).i₂)) := by
+    |(seqState a b L (n + 1)).sum - L| ≤
+    max |(seqState a b L n).sum - L| (max (a (seqState a b L n).i₁) (b (seqState a b L n).i₂)) := by
   have abs_aux {x y : ℝ} (hx : x ≤ 0) (hy : 0 ≤ y) : |x + y| ≤ max |x| y := by grind
   simp only [seqState]
   split_ifs with h <;> simp only
@@ -394,7 +381,7 @@ lemma seqLim_aux {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (L : �
 
 lemma seqLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (ha₁ : SeqLim a 0)
     (hb₁ : SeqLim b 0) (ha₂ : SeriesDivToInfty a) (hb₂ : SeriesDivToInfty b) (L : ℝ) :
-    SeqLim (fun n ↦ (seqState a b L n).s) L := by
+    SeqLim (fun n ↦ (seqState a b L n).sum) L := by
   intro ε hε
   obtain ⟨Na, hNa⟩ := ha₁ ε hε
   obtain ⟨Nb, hNb⟩ := hb₁ ε hε
@@ -429,31 +416,21 @@ lemma seqLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (ha₁ : Se
       grind
     grind
 
-lemma e_eq_of_lt {a b : ℕ → ℝ} {L : ℝ} {n : ℕ} (h : (seqState a b L n).s < L) :
-    (interlace a b L).e n = .inl (seqState a b L n).i₁ := by
-  erw [← interlace_pred] at h
-  simp [e, h]
-  rfl
-
-lemma e_eq_of_ge {a b : ℕ → ℝ} {L : ℝ} {n : ℕ} (h : L ≤ (seqState a b L n).s) :
-    (interlace a b L).e n = .inr (seqState a b L n).i₂ := by
-  erw [← not_lt, ← interlace_pred] at h
-  simp [e, h]
-  rfl
-
-lemma sum_eq_s (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
-    ∑ k ∈ range n, Sum.elim a (-b) ((interlace a b L).e k) = (seqState a b L n).s := by
+lemma sum_eq_sum (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
+    ∑ k ∈ range n, Sum.elim a (-b) ((interlace a b L).e k) = (seqState a b L n).sum := by
   induction n with
   | zero => simp
   | succ n ih =>
     rw [sum_range_succ, ih]
-    by_cases! H : (seqState a b L n).s < L
-    · rw [e_eq_of_lt H]
-      grind
-    · simp [e_eq_of_ge H]
-      grind
+    by_cases! H : (seqState a b L n).sum < L
+    · suffices a ((interlace a b L).i n) = a (seqState a b L n).i₁ by
+        simp [e, interlace_pred, H, this]
+      rfl
+    · rw [← not_lt] at H
+      suffices b ((interlace a b L).j n) = b (seqState a b L n).i₂ by
+        simp [e, interlace_pred, H, sub_eq_add_neg, this]
+      rfl
 
-open Classical
 noncomputable
 abbrev equiv {a b : ℕ → ℝ} (ha : SeriesDivToInfty a) (hb : SeriesDivToInfty b) (L : ℝ) :
     ℕ ≃ ℕ ⊕ ℕ :=
@@ -479,7 +456,7 @@ theorem exists_equiv_to_sum_seriesLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb�
     Equiv.ofBijective_apply]
   obtain ⟨N, hN⟩ := seqLim ha₀ hb₀ ha₁ hb₁ ha₂ hb₂ L ε hε
   refine ⟨N, fun n hn ↦ ?_⟩
-  rw [sum_eq_s]
+  rw [sum_eq_sum]
   exact hN _ hn
 
 /-!
@@ -509,34 +486,20 @@ noncomputable def splitSeq (c : ℕ → ℝ) : ℕ → state' c
 
 namespace splitSeq
 
-/- /-- Extract a map `ℕ → ℕ ⊕ ℕ` from `splitSeq c`. -/
-@[grind]
-noncomputable def extract (c : ℕ → ℝ) (n : ℕ) : ℕ ⊕ ℕ :=
-  if (splitSeq c (n + 1)).ige = (splitSeq c n).ige + 1
-    then .inl (splitSeq c n).ige
-    else .inr (splitSeq c n).ilt -/
+/-- The sequence of `state'`s used below. -/
+noncomputable abbrev ss (c : ℕ → ℝ) : ℕ → state' c := splitSeq c
 
 /-- Translate this into an `Interlace` structure. -/
 @[grind]
 noncomputable def interlace (c : ℕ → ℝ) : Interlace (state' c) where
-  s := splitSeq c
-  i := state'.ige
+  s := ss c
+  i n := (ss c n).ige
   hi := by grind
-  j := state'.ilt
+  j n := (ss c n).ilt
   hj := by grind
   P n st := 0 ≤ c n
   Hi n := by grind
   Hj n := by grind
-
-open Classical in
-lemma extract_spec_inl {c : ℕ → ℝ} {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by
-  simp only [e, interlace] at h
-  grind
-
-open Classical in
-lemma extract_spec_inr {c : ℕ → ℝ} {n i : ℕ} (h : (interlace c).e n = .inr i) : c n < 0 := by
-  simp only [e, interlace] at h
-  grind
 
 variable {c : ℕ → ℝ} (hc₁ : ∃ L, SeriesLim c L) (hc₂ : SeriesDivToInfty (|c ·|))
 
@@ -577,19 +540,15 @@ lemma frequently_lt' (n : ℕ) : ∃ m ≥ n, ¬ 0 ≤ c m := by
   convert frequently_lt hc₁ hc₂ n
   simp
 
-/- open Classical in
-lemma bijective_extract : Function.Bijective (interlace c).e :=
-  (interlace c).bijective_e (frequently_ge hc₁ hc₂) <| frequently_lt' hc₁ hc₂ -/
-
-open Classical in
+/-- The bijection extracted from the seuqence of `state'`s -/
 noncomputable abbrev equiv : ℕ ≃ ℕ ⊕ ℕ :=
   (interlace c).equiv (frequently_ge hc₁ hc₂) <| frequently_lt' hc₁ hc₂
 
-  -- .ofBijective (extract c) (bijective_extract hc₁ hc₂)
-
+/-- The subsequence of `c` consisting of its nonnegative terms. -/
 noncomputable def seq_ge : ℕ → ℝ :=
   c ∘ (equiv hc₁ hc₂).symm ∘ .inl
 
+/-- The subsequence of `c` consisting of its negative terms. -/
 noncomputable def seq_lt : ℕ → ℝ :=
   (- ·) ∘ c ∘ (equiv hc₁ hc₂).symm ∘ .inr
 
@@ -597,20 +556,8 @@ section
 
 omit hc₁ hc₂
 
-lemma interlace_s (c : ℕ → ℝ) : (interlace c).s = splitSeq c :=
-  rfl
-
-lemma interlace_i (c : ℕ → ℝ) (n : ℕ) :
-    (interlace c).i ((interlace c).s n) = (splitSeq c n).ige :=
-  rfl
-
-lemma interlace_j (c : ℕ → ℝ) (n : ℕ) :
-    (interlace c).j ((interlace c).s n) = (splitSeq c n).ilt :=
-  rfl
-
 @[grind =]
-lemma interlace_pred (c : ℕ → ℝ) (n : ℕ) :
-    (interlace c).pred n ↔ 0 ≤ c n := by
+lemma interlace_pred (c : ℕ → ℝ) (n : ℕ) : (interlace c).pred n ↔ 0 ≤ c n := by
   rfl
 
 end
@@ -619,27 +566,33 @@ lemma seq_ge_spec {n : ℕ} (hc : 0 ≤ c n) :
     seq_ge hc₁ hc₂ (splitSeq c n).ige = c n := by
   have : (equiv hc₁ hc₂).symm (.inl (splitSeq c n).ige) = n := by
     rw [← interlace_pred] at hc
-    simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, ← interlace_i, e, hc]
+    suffices (splitSeq c n).ige = (interlace c).i n by
+      simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, e, hc, this]
+    rfl
   simp [seq_ge, this]
 
 lemma seq_lt_spec {n : ℕ} (hc : c n < 0) :
     seq_lt hc₁ hc₂ (splitSeq c n).ilt = -(c n) := by
   have : (equiv hc₁ hc₂).symm (.inr (splitSeq c n).ilt) = n := by
     rw [← not_le, ← interlace_pred] at hc
-    simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, ← interlace_j, e, hc]
+    suffices (splitSeq c n).ilt = (interlace c).j n by
+      simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, e, hc, this]
+    rfl
   simp [seq_lt, this]
 
 lemma nonneg_ge : 0 ≤ seq_ge hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inl n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
-  simpa [seq_ge] using extract_spec_inl H₁
+  have {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by grind [e]
+  simpa [seq_ge] using this H₁
 
 lemma nonneg_lt : 0 ≤ seq_lt hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inr n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
-  simpa [seq_lt] using (extract_spec_inr H₁).le
+  have {n i : ℕ} (h : (interlace c).e n = .inr i) : c n ≤ 0 := by grind [e]
+  simpa [seq_lt] using this H₁
 
 lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂) 0 := by
   have H := eventually_le (equiv hc₁ hc₂).symm
@@ -683,8 +636,7 @@ lemma sum_range_eq_sum_sub_sum (n : ℕ) :
     by_cases h : 0 ≤ c n
     · simp only [splitSeq, h, ↓reduceIte, sum_range_succ, seq_ge_spec hc₁ hc₂ h]
       abel
-    · simp only [splitSeq, h, ↓reduceIte, sum_range_succ,
-        seq_lt_spec hc₁ hc₂ <| not_le.mp h]
+    · simp only [splitSeq, h, ↓reduceIte, sum_range_succ, seq_lt_spec hc₁ hc₂ <| not_le.mp h]
       abel
 
 lemma seriesDivToInfty : SeriesDivToInfty (seq_ge hc₁ hc₂) ∧ SeriesDivToInfty (seq_lt hc₁ hc₂) := by

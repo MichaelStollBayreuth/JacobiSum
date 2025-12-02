@@ -86,13 +86,13 @@ def mirror (I : Interlace α) : Interlace α where
 noncomputable def e (I : Interlace α) (n : ℕ) : ℕ ⊕ ℕ :=
   if I.pred n then .inl <| I.i n else .inr <| I.j n
 
-lemma mono_i (I : Interlace α) : Monotone fun n ↦ I.i n := by
+lemma mono_i (I : Interlace α) : Monotone I.i := by
   refine monotone_nat_of_le_succ fun n ↦ ?_
   have := I.Hi n
   have := I.Hj n
   by_cases I.pred n <;> grind
 
-lemma mono_j (I : Interlace α) : Monotone fun n ↦ I.j n :=
+lemma mono_j (I : Interlace α) : Monotone I.j :=
   mono_i I.mirror
 
 lemma i_const_of_not_pred {I : Interlace α} {m n : ℕ} (h : ∀ k ∈ Ico m n, ¬ I.pred k) :
@@ -114,11 +114,9 @@ lemma surjective_i {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) :
   | succ n ih =>
     obtain ⟨m, hm⟩ := ih
     have H := @Nat.find_min _ _ (freqP m)
-    push_neg at H
     set N := Nat.find (freqP m)
     use N + 1
-    replace H : I.i N = n :=
-      hm ▸ i_const_of_not_pred (n := N) (fun k hk ↦ H (by grind) (by grind)) N (by grind)
+    replace H : I.i N = n := hm ▸ i_const_of_not_pred (n := N) (by grind) N (by grind)
     exact H ▸ (I.Hi N (Nat.find_spec (freqP m)).2).1
 
 /-- The `j` function is surjective if the predicate `¬I.pred` holds frequently. -/
@@ -133,7 +131,7 @@ lemma surjective_i' {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) (i
   push_neg at H
   set N := Nat.find (freqP n)
   refine ⟨N, ?_, (Nat.find_spec (freqP n)).2⟩
-  exact hn ▸ i_const_of_not_pred (n := N) (fun k hk ↦ H (by grind) (by grind)) N (by grind)
+  exact hn ▸ i_const_of_not_pred (n := N) (by grind) N (by grind)
 
 lemma surjective_j' {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) (j : ℕ) :
     ∃ n, I.j n = j ∧ ¬ I.pred n :=
@@ -145,13 +143,11 @@ noncomputable def equiv (I : Interlace α)
     (freqP : ∀ n, ∃ m ≥ n, I.pred m) (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
     ℕ ≃ ℕ ⊕ ℕ :=
   .ofBijective I.e <| by
-    have Hi := I.Hi -- for `grind`
-    have Hj := I.Hj
     refine ⟨fun m n h ↦ ?_, fun mn ↦ ?_⟩
     · simp only [e] at h
-      by_cases hm : I.pred m <;> simp only [hm, ↓reduceIte] at h
-        <;> by_cases hn : I.pred n <;> simp only [hn, ↓reduceIte] at h
-          <;> refine le_antisymm ?_ ?_
+      have Hi := I.Hi -- for `grind`
+      have Hj := I.Hj
+      split_ifs at h with hm hn hn <;> refine le_antisymm ?_ ?_
       all_goals
         by_contra! H
         have H₁ := mono_i I H -- for `grind`
@@ -166,8 +162,6 @@ noncomputable def equiv (I : Interlace α)
         exact ⟨n, by grind⟩
 
 end Interlace
-
-open Interlace
 
 /-!
 ### Basic definitions and properties
@@ -274,6 +268,8 @@ noncomputable def interlace (a b : ℕ → ℝ) (L : ℝ) : Interlace (state a b
   Hi n := by grind
   Hj n := by grind
 
+open Interlace
+
 @[grind =]
 lemma interlace_pred (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     (interlace a b L).pred n ↔ (seqState a b L n).sum < L := by
@@ -290,7 +286,7 @@ lemma aux_i₁ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
   | succ m hmn ih =>
     intro h
     have h₁ := h m (by grind)
-    obtain ⟨ih₁, ih₂⟩ := ih (fun k hk ↦ h k (by grind))
+    obtain ⟨ih₁, ih₂⟩ := ih (by grind)
     have H : (st (m + 1)).i₁ = (st n).i₁ + (m + 1 - n) := by grind
     refine ⟨H, ?_⟩
     have : (st (m + 1)).sum = (st m).sum + a (st m).i₁ := by grind
@@ -308,7 +304,7 @@ lemma aux_i₂ (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
   | succ m hmn ih =>
     intro h
     have h₁ := h m (by grind)
-    obtain ⟨ih₁, ih₂⟩ := ih (fun k hk ↦ h k (by grind))
+    obtain ⟨ih₁, ih₂⟩ := ih (by grind)
     have H : (st (m + 1)).i₂ = (st n).i₂ + (m + 1 - n) := by grind
     refine ⟨H, ?_⟩
     have : (st (m + 1)).sum = (st m).sum - b (st m).i₂ := by grind
@@ -320,7 +316,7 @@ lemma frequently_lt (a : ℕ → ℝ) {b : ℕ → ℝ} (hb : SeriesDivToInfty b
   set st := seqState a b L
   by_contra! H
   have h : ∀ m ≥ n, (st m).sum = (st n).sum - ∑ k ∈ range (m - n), b ((st n).i₂ + k) :=
-    fun m hm ↦ (aux_i₂ a b L n m hm (fun k hk ↦ by grind)).2
+    fun m hm ↦ (aux_i₂ a b L n m hm (by grind)).2
   obtain ⟨N, hN₁, hN⟩ := TailDivToInfty hb (st n).i₂ ((st n).sum - L)
   specialize h (N + n) (by grind)
   specialize hN ((st n).i₂ + N) (by grind)
@@ -333,7 +329,7 @@ lemma frequently_le {a : ℕ → ℝ} (ha : SeriesDivToInfty a) (b : ℕ → ℝ
   set st := seqState a b L
   by_contra! H
   have h : ∀ m ≥ n, (st m).sum = (st n).sum + ∑ k ∈ range (m - n), a ((st n).i₁ + k) :=
-    fun m hm ↦ (aux_i₁ a b L n m hm (fun k hk ↦ by grind)).2
+    fun m hm ↦ (aux_i₁ a b L n m hm (by grind)).2
   obtain ⟨N, hN₁, hN⟩ := TailDivToInfty ha (st n).i₁ (L - (st n).sum)
   specialize h (N + n) (by grind)
   specialize hN ((st n).i₁ + N) (by grind)
@@ -351,11 +347,11 @@ lemma frequently_lt_then_le {a b : ℕ → ℝ} (ha : SeriesDivToInfty a) (hb : 
     ∃ m ≥ n, (seqState a b L m).sum < L ∧ L ≤ (seqState a b L (m + 1)).sum := by
   by_contra! H
   obtain ⟨m, hm₁, hm₂⟩ := frequently_lt a hb L n
-  have H₁ : ∀ k ≥ m, (seqState a b L k).sum < L := by
+  have H : ∀ k ≥ m, (seqState a b L k).sum < L := by
     intro k hk
     induction k, hk using Nat.le_induction with
     | base => exact hm₂
-    | succ k hk ih => exact H k (by grind) ih
+    | succ k hk ih => grind
   obtain ⟨k, hk₁, hk₂⟩ := frequently_le ha b L m
   grind
 
@@ -392,27 +388,16 @@ lemma seqLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (ha₁ : Se
   | base =>
     obtain ⟨H₁, H₂⟩ := hN₂
     simp only [seqState, H₁, ↓reduceIte] at H₂
-    have : a (seqState a b L N).i₁ < ε := by
-      refine hNa _ ?_
-      rw [← hNa']
-      refine mono_i (interlace a b L) ?_
-      grind
+    have : a (seqState a b L N).i₁ < ε :=
+      hNa _ <| hNa' ▸ (mono_i (interlace a b L) <| le_of_max_le_left hN₁)
     grind
   | succ n hn ih =>
     have H₁ := seqLim_aux ha₀ hb₀ L n
-    have Ha : a (seqState a b L n).i₁ < ε := by
-      refine hNa _ ?_
-      rw [← hNa']
-      refine mono_i (interlace a b L) ?_
-      grind
-    have Hb : b (seqState a b L n).i₂ < ε := by
-      refine hNb _ ?_
-      rw [← hNb']
-      refine mono_j (interlace a b L) ?_
-      grind
+    have Ha : a (seqState a b L n).i₁ < ε := hNa _ <| hNa' ▸ (mono_i (interlace a b L) <| by grind)
+    have Hb : b (seqState a b L n).i₂ < ε := hNb _ <| hNb' ▸ (mono_j (interlace a b L) <| by grind)
     grind
 
-lemma sum_eq_sum (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
+lemma sum_eq_seqState_sum (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
     ∑ k ∈ range n, Sum.elim a (-b) ((interlace a b L).e k) = (seqState a b L n).sum := by
   induction n with
   | zero => simp
@@ -448,12 +433,9 @@ theorem exists_equiv_to_sum_seriesLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb�
     ∃ σ : ℕ ≃ ℕ ⊕ ℕ, SeriesLim ((Sum.elim a (-b)) ∘ σ) L := by
   use equiv ha₂ hb₂ L
   intro ε hε
-  simp only [ge_iff_le, Function.comp_apply, seqState.equiv, Interlace.equiv,
-    Equiv.ofBijective_apply]
+  simp only [Function.comp_apply, seqState.equiv, Interlace.equiv, Equiv.ofBijective_apply]
   obtain ⟨N, hN⟩ := seqLim ha₀ hb₀ ha₁ hb₁ ha₂ hb₂ L ε hε
-  refine ⟨N, fun n hn ↦ ?_⟩
-  rw [sum_eq_sum]
-  exact hN _ hn
+  exact ⟨N, fun n hn ↦ by simpa only [sum_eq_seqState_sum] using hN _ hn⟩
 
 /-!
 ### The first part of the construction/proof
@@ -510,9 +492,7 @@ lemma frequently_ge (n : ℕ) : ∃ m ≥ n, 0 ≤ c m := by
   specialize hN' (max n (max N N')) (by grind)
   dsimp only at *
   have H₁ : ∑ k ∈ Ico n (max n (max N N')), |c k| = -∑ k ∈ Ico n (max n (max N N')), c k := by
-    rw [← sum_neg_distrib]
-    refine sum_congr rfl fun k hk ↦ ?_
-    exact abs_of_neg <| H k (by grind)
+    simpa only [← sum_neg_distrib] using sum_congr rfl (by grind)
   rw [← sum_range_add_sum_Ico _ (m := n) (by grind)] at hN'
   conv_rhs at hN => rw [← sum_range_add_sum_Ico _ (m := n) (by grind)]
   grind
@@ -525,9 +505,8 @@ lemma frequently_lt (n : ℕ) : ∃ m ≥ n, c m < 0 := by
   specialize hN (max n (max N N')) (by grind)
   specialize hN' (max n (max N N')) (by grind)
   dsimp only at *
-  have H₁ : ∑ k ∈ Ico n (max n (max N N')), |c k| = ∑ k ∈ Ico n (max n (max N N')), c k := by
-    refine sum_congr rfl fun k hk ↦ ?_
-    exact abs_of_nonneg <| H k (by grind)
+  have H₁ : ∑ k ∈ Ico n (max n (max N N')), |c k| = ∑ k ∈ Ico n (max n (max N N')), c k :=
+    sum_congr rfl (by grind)
   rw [← sum_range_add_sum_Ico _ (m := n) (by grind)] at hN'
   conv_rhs at hN => rw [← sum_range_add_sum_Ico _ (m := n) (by grind)]
   grind
@@ -558,8 +537,9 @@ lemma interlace_pred (c : ℕ → ℝ) (n : ℕ) : (interlace c).pred n ↔ 0 �
 
 end
 
-lemma seq_ge_spec {n : ℕ} (hc : 0 ≤ c n) :
-    seq_ge hc₁ hc₂ (splitSeq c n).ige = c n := by
+open Interlace
+
+lemma seq_ge_spec {n : ℕ} (hc : 0 ≤ c n) : seq_ge hc₁ hc₂ (splitSeq c n).ige = c n := by
   have : (equiv hc₁ hc₂).symm (.inl (splitSeq c n).ige) = n := by
     rw [← interlace_pred] at hc
     suffices (splitSeq c n).ige = (interlace c).i n by
@@ -567,8 +547,7 @@ lemma seq_ge_spec {n : ℕ} (hc : 0 ≤ c n) :
     rfl
   simp [seq_ge, this]
 
-lemma seq_lt_spec {n : ℕ} (hc : c n < 0) :
-    seq_lt hc₁ hc₂ (splitSeq c n).ilt = -(c n) := by
+lemma seq_lt_spec {n : ℕ} (hc : c n < 0) : seq_lt hc₁ hc₂ (splitSeq c n).ilt = -(c n) := by
   have : (equiv hc₁ hc₂).symm (.inr (splitSeq c n).ilt) = n := by
     rw [← not_le, ← interlace_pred] at hc
     suffices (splitSeq c n).ilt = (interlace c).j n by
@@ -580,14 +559,14 @@ lemma nonneg_ge : 0 ≤ seq_ge hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inl n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
-  have {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by grind [e]
+  have {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by grind
   simpa [seq_ge] using this H₁
 
 lemma nonneg_lt : 0 ≤ seq_lt hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inr n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
-  have {n i : ℕ} (h : (interlace c).e n = .inr i) : c n ≤ 0 := by grind [e]
+  have {n i : ℕ} (h : (interlace c).e n = .inr i) : c n ≤ 0 := by grind
   simpa [seq_lt] using this H₁
 
 lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂) 0 := by
@@ -599,11 +578,7 @@ lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂
     simp only [sub_zero] at hN ⊢
     obtain ⟨n, hn⟩ := H N
     refine ⟨n, fun m hm ↦ ?_⟩
-  · replace hn := (hn m hm).1
-    simp [seq_ge]
-    grind
-  · replace hn := (hn m hm).2
-    simp [seq_lt]
+    simp [seq_ge, seq_lt]
     grind
 
 lemma sum_range_abs_eq_sum_add_sum (n : ℕ) :
@@ -636,8 +611,7 @@ lemma sum_range_eq_sum_sub_sum (n : ℕ) :
       abel
 
 lemma seriesDivToInfty : SeriesDivToInfty (seq_ge hc₁ hc₂) ∧ SeriesDivToInfty (seq_lt hc₁ hc₂) := by
-  have hc₁' := hc₁
-  obtain ⟨L, hL⟩ := hc₁'
+  obtain ⟨L, hL⟩ := id hc₁ -- don't clear `hc₁`
   obtain ⟨N₁, hN₁⟩ := hL 1 zero_lt_one
   simp only [sum_range_eq_sum_sub_sum hc₁ hc₂] at hN₁
   constructor
@@ -651,12 +625,8 @@ lemma seriesDivToInfty : SeriesDivToInfty (seq_ge hc₁ hc₂) ∧ SeriesDivToIn
     obtain ⟨N₂, hN₂⟩ := hc₂ (2 * M + L + 1)
   all_goals
     simp only [sum_range_abs_eq_sum_add_sum hc₁ hc₂] at hN₂
-    let N := max N₁ N₂
-    specialize hN₁ N (by grind)
-    specialize hN₂ N (by grind)
-  · specialize hM (splitSeq c N).ige
-    grind
-  · specialize hM (splitSeq c N).ilt
+    specialize hN₁ (max N₁ N₂) (by grind)
+    specialize hN₂ (max N₁ N₂) (by grind)
     grind
 
 end splitSeq

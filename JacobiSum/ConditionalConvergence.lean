@@ -45,17 +45,17 @@ structure Interlace (α : Type*) where
   /-- The first index function -/
   i : ℕ → ℕ
   /-- At zero, `i` is zero. -/
-  hi : i 0 = 0
+  hi : i 0 = 0 := by grind
   /-- The second index function -/
   j : ℕ → ℕ
   /-- At zero, `j` is zero. -/
-  hj : j 0 = 0
+  hj : j 0 = 0 := by grind
   /-- The predicate that decides which index to increment -/
   P : ℕ → α → Prop
   /-- If `P n (s n)` holds, then `i` is incremented. -/
-  Hi n : P n (s n) → i (n + 1) = i n + 1 ∧ j (n + 1) = j n
+  Hi n : P n (s n) → i (n + 1) = i n + 1 ∧ j (n + 1) = j n := by grind
   /-- If `P n (s n)` does not hold, then `j` is incremented. -/
-  Hj n : ¬P n (s n) → i (n + 1) = i n ∧ j (n + 1) = j n + 1
+  Hj n : ¬P n (s n) → i (n + 1) = i n ∧ j (n + 1) = j n + 1 := by grind
 
 namespace Interlace
 
@@ -261,12 +261,8 @@ noncomputable abbrev ss (a b : ℕ → ℝ) (L : ℝ) : ℕ → state a b := seq
 noncomputable def interlace (a b : ℕ → ℝ) (L : ℝ) : Interlace (state a b) where
   s := ss a b L
   i n := (ss a b L n).i₁
-  hi := by grind
   j n := (ss a b L n).i₂
-  hj := by grind
   P n st := st.sum < L
-  Hi n := by grind
-  Hj n := by grind
 
 open Interlace
 
@@ -318,9 +314,8 @@ lemma frequently_lt (a : ℕ → ℝ) {b : ℕ → ℝ} (hb : SeriesDivToInfty b
   have h : ∀ m ≥ n, (st m).sum = (st n).sum - ∑ k ∈ range (m - n), b ((st n).i₂ + k) :=
     fun m hm ↦ (aux_i₂ a b L n m hm (by grind)).2
   obtain ⟨N, hN₁, hN⟩ := TailDivToInfty hb (st n).i₂ ((st n).sum - L)
-  specialize h (N + n) (by grind)
-  specialize hN ((st n).i₂ + N) (by grind)
   specialize H (N + n) (by grind)
+  specialize hN ((st n).i₂ + N) (by grind)
   rw [sum_Ico_eq_sum_range] at hN
   grind
 
@@ -331,9 +326,8 @@ lemma frequently_le {a : ℕ → ℝ} (ha : SeriesDivToInfty a) (b : ℕ → ℝ
   have h : ∀ m ≥ n, (st m).sum = (st n).sum + ∑ k ∈ range (m - n), a ((st n).i₁ + k) :=
     fun m hm ↦ (aux_i₁ a b L n m hm (by grind)).2
   obtain ⟨N, hN₁, hN⟩ := TailDivToInfty ha (st n).i₁ (L - (st n).sum)
-  specialize h (N + n) (by grind)
-  specialize hN ((st n).i₁ + N) (by grind)
   specialize H (N + n) (by grind)
+  specialize hN ((st n).i₁ + N) (by grind)
   rw [sum_Ico_eq_sum_range] at hN
   grind
 
@@ -386,13 +380,10 @@ lemma seqLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb₀ : 0 ≤ b) (ha₁ : Se
   dsimp only at *
   induction n, hn using Nat.le_induction with
   | base =>
-    obtain ⟨H₁, H₂⟩ := hN₂
-    simp only [seqState, H₁, ↓reduceIte] at H₂
-    have : a (seqState a b L N).i₁ < ε :=
-      hNa _ <| hNa' ▸ (mono_i (interlace a b L) <| le_of_max_le_left hN₁)
+    have : a (seqState a b L N).i₁ < ε := hNa _ <| hNa' ▸ (mono_i (interlace a b L) <| by grind)
     grind
   | succ n hn ih =>
-    have H₁ := seqLim_aux ha₀ hb₀ L n
+    have H := seqLim_aux ha₀ hb₀ L n
     have Ha : a (seqState a b L n).i₁ < ε := hNa _ <| hNa' ▸ (mono_i (interlace a b L) <| by grind)
     have Hb : b (seqState a b L n).i₂ < ε := hNb _ <| hNb' ▸ (mono_j (interlace a b L) <| by grind)
     grind
@@ -472,12 +463,8 @@ noncomputable abbrev ss (c : ℕ → ℝ) : ℕ → state' c := splitSeq c
 noncomputable def interlace (c : ℕ → ℝ) : Interlace (state' c) where
   s := ss c
   i n := (ss c n).ige
-  hi := by grind
   j n := (ss c n).ilt
-  hj := by grind
   P n st := 0 ≤ c n
-  Hi n := by grind
-  Hj n := by grind
 
 variable {c : ℕ → ℝ} (hc₁ : ∃ L, SeriesLim c L) (hc₂ : SeriesDivToInfty (|c ·|))
 
@@ -575,7 +562,6 @@ lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂
   refine ⟨fun ε hε ↦ ?_, fun ε hε ↦ ?_⟩
   all_goals
     obtain ⟨N, hN⟩ := SeqLim_zero_of_SeriesLim hL ε hε
-    simp only [sub_zero] at hN ⊢
     obtain ⟨n, hn⟩ := H N
     refine ⟨n, fun m hm ↦ ?_⟩
     simp [seq_ge, seq_lt]

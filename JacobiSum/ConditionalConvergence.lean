@@ -128,7 +128,7 @@ lemma surjective_i' {I : Interlace α} (freqP : ∀ n, ∃ m ≥ n, I.pred m) (i
     ∃ n, I.i n = i ∧ I.pred n := by
   obtain ⟨n, hn⟩ := surjective_i freqP i
   have H := @Nat.find_min _ _ (freqP n)
-  push_neg at H
+  push Not at H
   set N := Nat.find (freqP n)
   refine ⟨N, ?_, (Nat.find_spec (freqP n)).2⟩
   exact hn ▸ i_const_of_not_pred (n := N) (by grind) N (by grind)
@@ -201,7 +201,7 @@ lemma SeriesBounded_of_nonneg_and_not_divToInfty {a : ℕ → ℝ} (ha₀ : 0 �
     (ha : ¬ SeriesDivToInfty a) :
     ∃ M, ∀ n, |∑ k ∈ range n, a k| ≤ M := by
   unfold SeriesDivToInfty at ha
-  push_neg at ha
+  push Not at ha
   obtain ⟨M, hM⟩ := ha
   refine ⟨M, fun n ↦ ?_⟩
   obtain ⟨m, hm₁, hm₂⟩ := hM n

@@ -47,7 +47,7 @@ lemma InInterval.bisection {a : ℕ → ℝ} {x y : ℝ} (ha : InInterval a x y)
     obtain ⟨σ, hσs, hσ⟩ := exists_subsequence (P := (· ≤ z)) H
     exact ⟨σ, hσs, .inl fun n ↦ ⟨(ha _).1, hσ n⟩⟩
   · -- only finitely many terms `≤ z`, so the second alternative holds
-    push_neg at H
+    push Not at H
     obtain ⟨N, hN⟩ := H
     refine ⟨(· + (N + 1)), strictMono_id.add_const _, .inr fun n ↦ ⟨?_, (ha _).2⟩⟩
     exact (hN (n + (N + 1)) (by grind)).le

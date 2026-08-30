@@ -547,14 +547,14 @@ lemma nonneg_ge : 0 ≤ seq_ge hc₁ hc₂ := by
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inl n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
   have {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by grind
-  simpa [seq_ge] using this H₁
+  simpa [seq_ge, equiv, Interlace.equiv] using this H₁
 
 lemma nonneg_lt : 0 ≤ seq_lt hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inr n
   simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
   have {n i : ℕ} (h : (interlace c).e n = .inr i) : c n ≤ 0 := by grind
-  simpa [seq_lt] using this H₁
+  simpa [seq_lt, equiv, Interlace.equiv] using this H₁
 
 lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂) 0 := by
   have H := eventually_le (equiv hc₁ hc₂).symm

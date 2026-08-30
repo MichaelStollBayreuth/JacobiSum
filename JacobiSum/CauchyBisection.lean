@@ -170,6 +170,6 @@ theorem exists_isSubsequence_and_isCauchy_of_inInterval {a : ℕ → ℝ} {x y :
   -- it remains to verify that the interval width is sufficiently small
   rw [α.iterate_bisection_width_eq n, show α.hi = y from rfl, show α.lo = x from rfl]
   suffices (y - x) / 2 ^ n ≤ (y - x) / 2 ^ N by grind
-  gcongr <;> grind
+  gcongr; grind
 
 end BolzanoWeierstrass

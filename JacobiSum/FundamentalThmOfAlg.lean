@@ -32,7 +32,7 @@ lemma natDegree_scale {c : R} (hc : c ≠ 0) : (aeval (c • (X : R[X])) p).natD
 
 omit [NoZeroDivisors R] in
 lemma coeff_aeval_C_mul_X (c : R) (n : ℕ) : (aeval (C c * X) p).coeff n = c ^ n * p.coeff n := by
-  simp [aeval_eq_sum_range, finset_sum_coeff, mul_pow]
+  simp [aeval_eq_sum_range, mul_pow]
   conv => enter [1, 2, i]; rw [← C_pow, coeff_C_mul_X_pow]
   simp only [mul_ite, mul_zero, Finset.sum_ite_eq, Finset.mem_range]
   split

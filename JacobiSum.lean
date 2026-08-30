@@ -3,3 +3,5 @@
 import JacobiSum.Basic
 import JacobiSum.Cubic
 import JacobiSum.ConditionalConvergence
+import JacobiSum.CauchyBisection
+import JacobiSum.FundamentalThmOfAlg

@@ -24,7 +24,8 @@ lemma natDegree_shift (a : R) : (aeval (X + C a : R[X]) p).natDegree = p.natDegr
   · refine map_natDegree_eq_natDegree p fun n c hc ↦ ?_
     simp [natDegree_C_mul hc]
 
-lemma natDegree_scale {c : R} (hc : c ≠ 0) : (aeval (c • (X : R[X])) p).natDegree = p.natDegree := by
+lemma natDegree_scale {c : R} (hc : c ≠ 0) :
+    (aeval (c • (X : R[X])) p).natDegree = p.natDegree := by
   refine map_natDegree_eq_natDegree p fun n a ha ↦ ?_
   simp only [aeval_monomial, algebraMap_eq, natDegree_C_mul ha]
   compute_degree

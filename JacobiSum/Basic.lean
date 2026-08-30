@@ -1,7 +1,4 @@
-import Mathlib.NumberTheory.GaussSum
-import Mathlib.NumberTheory.MulChar.Lemmas
 import Mathlib.NumberTheory.Zsqrtd.GaussianInt
-import Mathlib.RingTheory.RootsOfUnity.Lemmas
 import Mathlib.NumberTheory.LegendreSymbol.Complex
 import Mathlib.NumberTheory.JacobiSum.Basic
 
@@ -41,12 +38,8 @@ has absolute value the square root of `#F`. -/
 lemma gaussSum_norm_eq_sqrt {χ : MulChar F ℂ} (hχ : χ ≠ 1) {φ : AddChar F ℂ}
     (hφ : φ.IsPrimitive) :
     ‖gaussSum χ φ‖ = Real.sqrt (Fintype.card F) := by
-  have hF : 0 < ringChar F := Nat.pos_of_ne_zero <| CharP.ringChar_ne_zero_of_finite F
-  have gauss_inv : gaussSum χ⁻¹ φ⁻¹ = star (gaussSum χ φ) := by
-    rw [← χ.star_eq_inv, gaussSum, gaussSum]
-    simp only [MulChar.star_apply, RCLike.star_def, star_sum, star_mul', AddChar.starComp_apply hF]
   have := gaussSum_mul_gaussSum_eq_card hχ hφ
-  rw [gauss_inv, Complex.star_def, Complex.mul_conj] at this
+  rw [← star_gaussSum_eq, Complex.star_def, Complex.mul_conj] at this
   norm_cast at this
   rw [← Real.sqrt_inj (Complex.normSq_nonneg (gaussSum _ _)) (Nat.cast_nonneg _)] at this
   rw [← this]

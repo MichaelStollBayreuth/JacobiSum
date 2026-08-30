@@ -137,29 +137,40 @@ lemma surjective_j' {I : Interlace α} (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m
     ∃ n, I.j n = j ∧ ¬ I.pred n :=
   surjective_i' (I := I.mirror) freqnP j
 
+/-- `I.e` enumerates `ℕ ⊕ ℕ` when both `I.pred` and `¬I.pred` hold frequently. -/
+lemma bijective_e (I : Interlace α)
+    (freqP : ∀ n, ∃ m ≥ n, I.pred m) (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
+    Function.Bijective I.e := by
+  refine ⟨fun m n h ↦ ?_, fun mn ↦ ?_⟩
+  · simp only [e] at h
+    have Hi := I.Hi -- for `grind`
+    have Hj := I.Hj
+    split_ifs at h with hm hn hn <;> refine le_antisymm ?_ ?_
+    all_goals
+      by_contra! H
+      have H₁ := mono_i I H -- for `grind`
+      have H₂ := mono_j I H
+      grind
+  · cases mn with
+    | inl val =>
+      obtain ⟨n, hn₁, hn₂⟩ := surjective_i' freqP val
+      exact ⟨n, by grind⟩
+    | inr val =>
+      obtain ⟨n, hn₁, hn₂⟩ := surjective_j' freqnP val
+      exact ⟨n, by grind⟩
+
 /-- The equivalence `ℕ ≃ ℕ ⊕ ℕ` extracted from an `Interlace` structure `I` when both `I.pred`
 and `¬I.pred` hold frequently. -/
 noncomputable def equiv (I : Interlace α)
     (freqP : ∀ n, ∃ m ≥ n, I.pred m) (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) :
     ℕ ≃ ℕ ⊕ ℕ :=
-  .ofBijective I.e <| by
-    refine ⟨fun m n h ↦ ?_, fun mn ↦ ?_⟩
-    · simp only [e] at h
-      have Hi := I.Hi -- for `grind`
-      have Hj := I.Hj
-      split_ifs at h with hm hn hn <;> refine le_antisymm ?_ ?_
-      all_goals
-        by_contra! H
-        have H₁ := mono_i I H -- for `grind`
-        have H₂ := mono_j I H
-        grind
-    · cases mn with
-      | inl val =>
-        obtain ⟨n, hn₁, hn₂⟩ := surjective_i' freqP val
-        exact ⟨n, by grind⟩
-      | inr val =>
-        obtain ⟨n, hn₁, hn₂⟩ := surjective_j' freqnP val
-        exact ⟨n, by grind⟩
+  .ofBijective I.e <| I.bijective_e freqP freqnP
+
+@[simp]
+lemma equiv_apply (I : Interlace α) (freqP : ∀ n, ∃ m ≥ n, I.pred m)
+    (freqnP : ∀ n, ∃ m ≥ n, ¬ I.pred m) (n : ℕ) :
+    I.equiv freqP freqnP n = I.e n :=
+  rfl
 
 end Interlace
 
@@ -406,7 +417,8 @@ lemma sum_eq_seqState_sum (a b : ℕ → ℝ) (L : ℝ) (n : ℕ) :
 noncomputable
 abbrev equiv {a b : ℕ → ℝ} (ha : SeriesDivToInfty a) (hb : SeriesDivToInfty b) (L : ℝ) :
     ℕ ≃ ℕ ⊕ ℕ :=
-  (interlace a b L).equiv (frequently_lt a hb L) (frequently_le' ha b L)
+  (interlace a b L).equiv (fun n ↦ by simpa [interlace_pred] using frequently_lt a hb L n)
+    fun n ↦ by simpa [interlace_pred] using frequently_le' ha b L n
 
 end seqState
 
@@ -424,7 +436,7 @@ theorem exists_equiv_to_sum_seriesLim {a b : ℕ → ℝ} (ha₀ : 0 ≤ a) (hb�
     ∃ σ : ℕ ≃ ℕ ⊕ ℕ, SeriesLim ((Sum.elim a (-b)) ∘ σ) L := by
   use equiv ha₂ hb₂ L
   intro ε hε
-  simp only [Function.comp_apply, seqState.equiv, Interlace.equiv, Equiv.ofBijective_apply]
+  simp only [Function.comp_apply, seqState.equiv, Interlace.equiv_apply]
   obtain ⟨N, hN⟩ := seqLim ha₀ hb₀ ha₁ hb₁ ha₂ hb₂ L ε hε
   exact ⟨N, fun n hn ↦ by simpa only [sum_eq_seqState_sum] using hN _ hn⟩
 
@@ -466,6 +478,10 @@ noncomputable def interlace (c : ℕ → ℝ) : Interlace (state' c) where
   j n := (ss c n).ilt
   P n st := 0 ≤ c n
 
+@[grind =]
+lemma interlace_pred (c : ℕ → ℝ) (n : ℕ) : (interlace c).pred n ↔ 0 ≤ c n := by
+  rfl
+
 variable {c : ℕ → ℝ} (hc₁ : ∃ L, SeriesLim c L) (hc₂ : SeriesDivToInfty (|c ·|))
 
 include hc₁ hc₂
@@ -504,7 +520,8 @@ lemma frequently_lt' (n : ℕ) : ∃ m ≥ n, ¬ 0 ≤ c m := by
 
 /-- The bijection extracted from the seuqence of `state'`s -/
 noncomputable abbrev equiv : ℕ ≃ ℕ ⊕ ℕ :=
-  (interlace c).equiv (frequently_ge hc₁ hc₂) <| frequently_lt' hc₁ hc₂
+  (interlace c).equiv (fun n ↦ by simpa [interlace_pred] using frequently_ge hc₁ hc₂ n)
+    fun n ↦ by simpa [interlace_pred] using frequently_lt' hc₁ hc₂ n
 
 /-- The subsequence of `c` consisting of its nonnegative terms. -/
 noncomputable def seq_ge : ℕ → ℝ :=
@@ -514,23 +531,13 @@ noncomputable def seq_ge : ℕ → ℝ :=
 noncomputable def seq_lt : ℕ → ℝ :=
   (- ·) ∘ c ∘ (equiv hc₁ hc₂).symm ∘ .inr
 
-section
-
-omit hc₁ hc₂
-
-@[grind =]
-lemma interlace_pred (c : ℕ → ℝ) (n : ℕ) : (interlace c).pred n ↔ 0 ≤ c n := by
-  rfl
-
-end
-
 open Interlace
 
 lemma seq_ge_spec {n : ℕ} (hc : 0 ≤ c n) : seq_ge hc₁ hc₂ (splitSeq c n).ige = c n := by
   have : (equiv hc₁ hc₂).symm (.inl (splitSeq c n).ige) = n := by
     rw [← interlace_pred] at hc
     suffices (splitSeq c n).ige = (interlace c).i n by
-      simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, e, hc, this]
+      simp [Equiv.symm_apply_eq, equiv, e, hc, this]
     rfl
   simp [seq_ge, this]
 
@@ -538,23 +545,23 @@ lemma seq_lt_spec {n : ℕ} (hc : c n < 0) : seq_lt hc₁ hc₂ (splitSeq c n).i
   have : (equiv hc₁ hc₂).symm (.inr (splitSeq c n).ilt) = n := by
     rw [← not_le, ← interlace_pred] at hc
     suffices (splitSeq c n).ilt = (interlace c).j n by
-      simp [Equiv.symm_apply_eq, equiv, Interlace.equiv, e, hc, this]
+      simp [Equiv.symm_apply_eq, equiv, e, hc, this]
     rfl
   simp [seq_lt, this]
 
 lemma nonneg_ge : 0 ≤ seq_ge hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inl n
-  simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
+  simp only [equiv, Interlace.equiv_apply] at H₁
   have {n i : ℕ} (h : (interlace c).e n = .inl i) : 0 ≤ c n := by grind
-  simpa [seq_ge, equiv, Interlace.equiv] using this H₁
+  simpa [seq_ge] using this H₁
 
 lemma nonneg_lt : 0 ≤ seq_lt hc₁ hc₂ := by
   refine Pi.le_def.mpr fun n ↦ ?_
   have H₁ := Equiv.apply_symm_apply (equiv hc₁ hc₂) <| .inr n
-  simp only [equiv, Interlace.equiv, Equiv.ofBijective_apply] at H₁
+  simp only [equiv, Interlace.equiv_apply] at H₁
   have {n i : ℕ} (h : (interlace c).e n = .inr i) : c n ≤ 0 := by grind
-  simpa [seq_lt, equiv, Interlace.equiv] using this H₁
+  simpa [seq_lt] using this H₁
 
 lemma seqLim_zero : SeqLim (seq_ge hc₁ hc₂) 0 ∧ SeqLim (seq_lt hc₁ hc₂) 0 := by
   have H := eventually_le (equiv hc₁ hc₂).symm

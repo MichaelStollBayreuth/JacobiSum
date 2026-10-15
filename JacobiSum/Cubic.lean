@@ -8,7 +8,7 @@ namespace IsPrimitiveRoot
 variable {R : Type*} [CommRing R] [IsDomain R] {ω : R}
 
 lemma cubic_rel (hω : IsPrimitiveRoot ω 3) : ω ^ 2 + ω + 1 = 0 := by
-  rw [← hω.geom_sum_eq_zero (by omega)]
+  rw [← hω.geom_sum_eq_zero (by lia)]
   simp only [sum_range_succ, range_one, sum_singleton, pow_zero, pow_one]
   abel
 
@@ -43,7 +43,7 @@ theorem gaussSum_pow_three {χ : MulChar F R} (hχ : orderOf χ = 3) {ψ : AddCh
     (gaussSum χ ψ) ^ 3 = Fintype.card F * jacobiSum χ χ := by
   simpa only [hχ, val_neg_one_eq_one_of_odd_order ⟨1, rfl⟩ (hχ ▸ pow_orderOf_eq_one χ), one_mul,
     Nat.succ_sub_succ_eq_sub, tsub_zero, Nat.Ico_succ_singleton, prod_singleton, pow_one]
-    using gaussSum_pow_eq_prod_jacobiSum (by omega : 2 ≤ orderOf χ) hψ
+    using gaussSum_pow_eq_prod_jacobiSum (by lia : 2 ≤ orderOf χ) hψ
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 
@@ -55,7 +55,7 @@ lemma jacobiSum_eq_neg_one_add_three_mul_of_orderOf_eq_three {χ : MulChar F R} 
     ∃ z ∈ Algebra.adjoin ℤ {ω}, jacobiSum χ χ = -1 + 3 * z := by
   have hχ' : χ ^ 3 = 1 := hχ ▸ pow_orderOf_eq_one χ
   obtain ⟨z, hz, Hz⟩ :=
-    exists_jacobiSum_eq_neg_one_add (by omega) hχ' hχ' (hχ ▸ χ.orderOf_dvd_card_sub_one) hω
+    exists_jacobiSum_eq_neg_one_add (by lia) hχ' hχ' (hχ ▸ χ.orderOf_dvd_card_sub_one) hω
   have hω' : (ω - 1) ^ 2 = 3 * (-ω) := by
     linear_combination hω.cubic_rel
   rw [hω', mul_comm, mul_assoc] at Hz

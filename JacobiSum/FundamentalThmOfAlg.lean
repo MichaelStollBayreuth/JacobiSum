@@ -38,7 +38,7 @@ lemma coeff_aeval_C_mul_X (c : R) (n : ℕ) : (aeval (C c * X) p).coeff n = c ^ 
   simp only [mul_ite, mul_zero, Finset.sum_ite_eq, Finset.mem_range]
   split
   · rw [mul_comm]
-  · have : n > p.natDegree := by omega
+  · have : n > p.natDegree := by lia
     simp [coeff_eq_zero_of_natDegree_lt this]
 
 lemma coeff_X_pow_mul_of_lt {k n : ℕ} (h : n < k) : (X ^ k * p).coeff n = 0 := by
@@ -47,7 +47,7 @@ lemma coeff_X_pow_mul_of_lt {k n : ℕ} (h : n < k) : (X ^ k * p).coeff n = 0 :=
   · simp
   refine coeff_eq_zero_of_lt_natTrailingDegree ?_
   rw [natTrailingDegree_mul (pow_ne_zero k X_ne_zero) hp, natTrailingDegree_X_pow]
-  omega
+  lia
 
 end Polynomial
 
@@ -123,7 +123,7 @@ lemma poly_aux (h : eval 0 f ≠ 0) : ∃ (c c' : ℂ) (k : ℕ) (g : ℂ[X]),
   have hg {n : ℕ} : g.coeff n = -c' * f.coeff (k + 2 + n) * c ^ (k + 2 + n) := by
     rcases lt_or_ge n (f.natDegree - (k + 1)) with hn | hn
     · simp [g, hn]
-    · rw [coeff_eq_zero_of_natDegree_lt (p := f) (by omega)]
+    · rw [coeff_eq_zero_of_natDegree_lt (p := f) (by lia)]
       simp [g, hn]
   refine ⟨c, c', k, g, ext fun n ↦ ?_, hc, hc'⟩
   simp only [smul_eq_C_mul, map_mul, aeval_C, algebraMap_eq, coeff_C_mul, coeff_aeval_C_mul_X,
@@ -134,19 +134,19 @@ lemma poly_aux (h : eval 0 f ≠ 0) : ∃ (c c' : ℂ) (k : ℕ) (g : ℂ[X]),
   simp only [coeff_one, hn.ne', ↓reduceIte, zero_sub, c']
   rcases le_or_gt n k with hnk | hnk
   · -- `n ≤ k`
-    rw [coeff_X_pow_mul_of_lt _ (by omega)]
-    simpa [Nat.sub_add_cancel hn, h, hc] using Nat.find_min H (show n - 1 < k by omega)
+    rw [coeff_X_pow_mul_of_lt _ (by lia)]
+    simpa [Nat.sub_add_cancel hn, h, hc] using Nat.find_min H (show n - 1 < k by lia)
   · -- `n > k`
     rcases eq_or_ne n (k + 1) with rfl | hnk'
     · have := coeff_X_pow_mul (1 + X * g) (k + 1) 0
       rw [zero_add] at this
       simp only [neg_mul, one_div, this, coeff_add, coeff_one_zero, mul_coeff_zero, coeff_X_zero,
         zero_mul, add_zero, c]
-      rw [← Nat.cast_succ, Complex.cpow_nat_inv_pow _ (by omega)]
+      rw [← Nat.cast_succ, Complex.cpow_nat_inv_pow _ (by lia)]
       field_simp
-    · obtain ⟨l, rfl⟩ := Nat.exists_eq_add_of_le (show k + 2 ≤ n by omega)
-      rw [show k + 2 + l = l + 1 + (k + 1) by omega, coeff_X_pow_mul, mul_comm (c ^ _),
-        show l + 1 + (k + 1) = k + 2 + l by omega]
+    · obtain ⟨l, rfl⟩ := Nat.exists_eq_add_of_le (show k + 2 ≤ n by lia)
+      rw [show k + 2 + l = l + 1 + (k + 1) by lia, coeff_X_pow_mul, mul_comm (c ^ _),
+        show l + 1 + (k + 1) = k + 2 + l by lia]
       simp [hg, c', mul_assoc, coeff_one]
 
 lemma smaller_value {z₀ : ℂ} (h : eval z₀ f ≠ 0) : ∃ z, ‖eval z f‖ < ‖eval z₀ f‖ := by
